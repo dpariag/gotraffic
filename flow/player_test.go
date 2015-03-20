@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 	"testing"
-	"github.com/dpariag/network"
+	"gotraffic/network"
 )
 
 func flowReplayTolerances(f *Flow) (minReplayTime, maxReplayTime int64) {
