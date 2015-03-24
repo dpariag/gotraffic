@@ -1,46 +1,48 @@
 package flow
 
 import (
-	"fmt"
-	"time"
-	"testing"
+	//	"fmt"
 	"gotraffic/network"
+	"testing"
+	"time"
 )
 
+// Estimate minimum and maximum acceptable replay times for a flow
+// The calculated estimates are based on the number of packets in the flow
 func flowReplayTolerances(f *Flow) (minReplayTime, maxReplayTime int64) {
-	tolerance := int64(f.NumPkts() * 2000000)
+	tolerance := int64(f.NumPkts() * 2000000) // 2ms per packet
 	minReplayTime = f.Duration().Nanoseconds() - tolerance
 	maxReplayTime = f.Duration().Nanoseconds() + tolerance
-	fmt.Printf("Min: %v Max: %v\n", minReplayTime, maxReplayTime)
 	return minReplayTime, maxReplayTime
 }
 
-func TestSingleFlowReplay(t *testing.T) {
-	flow := NewFlow("captures/ping.cap")
-	iface := network.NewLoopback()
-	iface.Init()
-	player := NewPlayer(iface, flow)
-
-	start := time.Now()
-	player.Play()
-	iface.Shutdown(5*time.Second)
-	elapsed := time.Since(start)
-
-	flowPkts := flow.NumPkts()
-	playerRxPkts, playerTxPkts := player.PktStats()
-	ifaceRxPkts, ifaceTxPkts := iface.PktStats()
+// Check that the player received every packet it sent (no packet drops)
+func verifyPlayerStats(p *Player, t *testing.T) {
+	playerRxPkts, playerTxPkts := p.PktStats()
 
 	if playerRxPkts != playerTxPkts {
-		t.Errorf("Error: Player txPkts: %v rxPkts: %v\n", playerRxPkts, playerTxPkts)
+		t.Errorf("Error: Player sent: %v packets, but received: %v packets\n", playerTxPkts, playerRxPkts)
 	}
 
-	if player.DroppedPkts() != 0 {
-		t.Errorf("Error: Flow player reports %v dropped packets\n", player.DroppedPkts())
+	if p.DroppedPkts() != 0 {
+		t.Errorf("Error: Flow player reports %v dropped packets\n", p.DroppedPkts())
 	}
+}
 
+// Check that the player sent packet count matches the flow packet count
+func verifyFlowStats(p *Player, f *Flow, t *testing.T) {
+	_, playerTxPkts := p.PktStats()
+	flowPkts := f.NumPkts()
 	if playerTxPkts != flowPkts {
 		t.Errorf("Player sent %v pkts. Flow contains %v pkts\n", playerTxPkts, flowPkts)
 	}
+}
+
+// TODO: i should be network.Interface
+// Check that the player's sent and received packet counts match the interface
+func verifyInterfaceStats(p *Player, i *network.LoopbackInterface, t *testing.T) {
+	playerRxPkts, playerTxPkts := p.PktStats()
+	ifaceRxPkts, ifaceTxPkts := i.PktStats()
 
 	if playerTxPkts != ifaceTxPkts {
 		t.Errorf("Player TxPkts: %v Interface TxPkts: %v\n", playerTxPkts, ifaceTxPkts)
@@ -49,9 +51,54 @@ func TestSingleFlowReplay(t *testing.T) {
 	if playerRxPkts != ifaceRxPkts {
 		t.Errorf("Player RxPkts: %v Interface RxPkts: %v\n", playerRxPkts, ifaceRxPkts)
 	}
+}
 
-	minReplayTime, maxReplayTime := flowReplayTolerances(flow)
-	if elapsed.Nanoseconds() > maxReplayTime || elapsed.Nanoseconds() < minReplayTime {
-		t.Errorf("Replay time: %v. Actual flow duration: %v\n", elapsed, flow.Duration())
+// Check that the time taken to replay the flow is acceptable
+// Tolerate up to 2ms delay per packet
+func verifyReplayTime(replayTime time.Duration, f *Flow, numReplays int64, t *testing.T) {
+	minReplayTime, maxReplayTime := flowReplayTolerances(f)
+	minReplayTime = minReplayTime * numReplays
+	maxReplayTime = maxReplayTime * numReplays
+
+	if replayTime.Nanoseconds() > maxReplayTime || replayTime.Nanoseconds() < minReplayTime {
+		t.Errorf("replay time (ns): %v. number of replays: %v flow duration (ns): %v\n",
+			replayTime, numReplays, f.Duration())
 	}
+}
+
+func TestSingleFlowPlay(t *testing.T) {
+	flow := NewFlow("captures/ping.cap")
+	iface := network.NewLoopback()
+	iface.Init()
+	player := NewPlayer(iface, flow)
+
+	start := time.Now()
+	player.Play()
+	iface.Shutdown(5 * time.Second)
+	elapsed := time.Since(start)
+
+	verifyPlayerStats(player, t)
+	verifyFlowStats(player, flow, t)
+	verifyInterfaceStats(player, iface, t)
+	verifyReplayTime(elapsed, flow, 1, t)
+}
+
+func TestMultipleFlowReplay(t *testing.T) {
+	flow := NewFlow("captures/ping.cap")
+	iface := network.NewLoopback()
+	iface.Init()
+	player := NewPlayer(iface, flow)
+	done := make(chan *Player)
+
+	start := time.Now()
+	go player.Replay(done)
+	<-done
+	go player.Replay(done)
+	<-done
+	iface.Shutdown(5 * time.Second)
+	elapsed := time.Since(start)
+
+	verifyPlayerStats(player, t)
+	verifyInterfaceStats(player, iface, t)
+	verifyReplayTime(elapsed, flow, 2, t)
 }
