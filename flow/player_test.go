@@ -1,8 +1,7 @@
 package flow
 
 import (
-	//	"fmt"
-	"gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/network"
 	"testing"
 	"time"
 )

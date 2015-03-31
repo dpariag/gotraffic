@@ -3,7 +3,7 @@ package flow
 import (
 	"fmt"
 	"time"
-	"gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/network"
 )
 
 type MixPlayer struct {

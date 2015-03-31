@@ -2,8 +2,8 @@ package main
 
 import "fmt"
 import "time"
-import "gotraffic/flow"
-import "gotraffic/network"
+import "git.svc.rocks/dpariag/gotraffic/flow"
+import "git.svc.rocks/dpariag/gotraffic/network"
 
 func main() {
 	iface := network.NewPCAPInterface("bridge0")

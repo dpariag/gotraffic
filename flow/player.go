@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"time"
 	"code.google.com/p/gopacket"
-	"gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/network"
 )
 
 type Player struct {
