@@ -12,7 +12,7 @@ func printPacket(prefix string, p *gopacket.Packet) {
 	fmt.Println(prefix, src, " --> ", dst)
 }
 
-type Interface interface {
+type Device interface {
 	Init()
 	Register(hash uint64, c chan gopacket.Packet)
 	Send(p *gopacket.Packet)
@@ -34,7 +34,7 @@ type PCAPInterface struct {
 	txBytes	uint64
 }
 
-func NewPCAPInterface(name string, ) Interface {
+func NewPCAPInterface(name string, ) Device {
 	i := PCAPInterface{}
 	//TODO: Catch error
 	i.handle, _ = pcap.OpenLive(name, 2048, true, pcap.BlockForever)
