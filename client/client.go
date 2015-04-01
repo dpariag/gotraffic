@@ -1,17 +1,19 @@
 package main
 
-import "fmt"
-import "time"
-import "git.svc.rocks/dpariag/gotraffic/flow"
-import "git.svc.rocks/dpariag/gotraffic/network"
+import (
+	"fmt"
+	"git.svc.rocks/dpariag/gotraffic/flow"
+	"git.svc.rocks/dpariag/gotraffic/network"
+	"time"
+)
 
 func main() {
 	iface := network.NewPCAPInterface("bridge0")
 	iface.Init()
 
 	mix := flow.NewMix()
-	f1 := flow.NewFlow("./ping.cap")
-	f2 := flow.NewFlow("./youtube-stream1.cap.pcap")
+	f1 := flow.NewFlow("../captures/ping.cap")
+	f2 := flow.NewFlow("../captures/youtube-stream1.cap.pcap")
 	// Should FlowGroup take the flow by value or pointer?
 	mix.AddFlow(f1, 1)
 	mix.AddFlow(f2, 1)

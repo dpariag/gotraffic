@@ -6,7 +6,7 @@ import (
 
 func TestSingleFlowMix(t *testing.T) {
 	m := NewMix()
-	f := NewFlow("./captures/ping.cap")
+	f := NewFlow("../captures/ping.cap")
 	m.AddFlow(f, 1)
 
 	if m.NumFlows() != 1 {

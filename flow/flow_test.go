@@ -31,9 +31,9 @@ func verifyFlow(t *testing.T, pcapPath string, info *flowInfo) {
 }
 
 func TestICMPFlow(t *testing.T) {
-	verifyFlow(t, "captures/ping.cap", &flowInfo{14, 6027973000, 1372})
+	verifyFlow(t, "../captures/ping.cap", &flowInfo{14, 6027973000, 1372})
 }
 
 func TestYouTubeFlow(t *testing.T) {
-	verifyFlow(t, "captures/youtube.cap", &flowInfo{87, 4829350000, 7560})
+	verifyFlow(t, "../captures/youtube.cap", &flowInfo{87, 4829350000, 7560})
 }
