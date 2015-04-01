@@ -13,13 +13,13 @@ func main() {
 	f1 := flow.NewFlow("./ping.cap")
 	f2 := flow.NewFlow("./youtube-stream1.cap.pcap")
 	// Should FlowGroup take the flow by value or pointer?
-	mix.AddFlow(f1,1)
-	mix.AddFlow(f2,1)
+	mix.AddFlow(f1, 1)
+	mix.AddFlow(f2, 1)
 
 	player := flow.NewMixPlayer(mix, iface, 20*time.Second)
 	player.Play()
 
-	iface.Shutdown(5*time.Second)
+	iface.Shutdown(5 * time.Second)
 	rxPkts, rxBytes := iface.RxStats()
 	txPkts, txBytes := iface.TxStats()
 	fmt.Printf("Packets: rx: %v tx: %v\n", rxPkts, txPkts)

@@ -1,33 +1,33 @@
 package flow
 
 import (
+	"code.google.com/p/gopacket"
+	"code.google.com/p/gopacket/layers"
+	"code.google.com/p/gopacket/pcap"
 	"net"
 	"time"
-	"code.google.com/p/gopacket"
-	"code.google.com/p/gopacket/pcap"
-	"code.google.com/p/gopacket/layers"
 )
 
 type FlowPacket struct {
-	gopacket.Packet		// The packet
-	Gap	time.Duration	// Inter-packet gap between this packet and its predecessor
+	gopacket.Packet               // The packet
+	Gap             time.Duration // Inter-packet gap between this packet and its predecessor
 }
 
 type FlowPackets []FlowPacket
 
 type Flow struct {
-	pkts		FlowPackets	// the packets of the flow, including inter-packet gaps
-	duration	time.Duration
-	numBytes	uint64
-	bitrate		float64		// In bps
+	pkts     FlowPackets // the packets of the flow, including inter-packet gaps
+	duration time.Duration
+	numBytes uint64
+	bitrate  float64 // In bps
 }
 
 func NewFlow(capFile string) *Flow {
-	if handle,err := pcap.OpenOffline(capFile); err != nil {
+	if handle, err := pcap.OpenOffline(capFile); err != nil {
 		panic(err)
 	} else {
 		var f Flow
-		src:= gopacket.NewPacketSource(handle, handle.LinkType())
+		src := gopacket.NewPacketSource(handle, handle.LinkType())
 		f.pkts = make(FlowPackets, 0)
 		lastPktTime := time.Now()
 
@@ -76,7 +76,7 @@ func (f *Flow) endpointPackets(endpoint gopacket.Endpoint) FlowPackets {
 	for i := 0; i < len(f.pkts); i++ {
 		if f.pkts[i].NetworkLayer().NetworkFlow().Src() == endpoint {
 			pkts = append(pkts, f.pkts[i])
-		 }
+		}
 	}
 	return pkts
 }
@@ -108,6 +108,5 @@ func (p *FlowPackets) RewriteIPs(srcIP net.IP, dstIP net.IP) {
 }
 
 // TODOs
-// 1) NewFlow should return an error instead of panic'ing 
+// 1) NewFlow should return an error instead of panic'ing
 // 2) Handle empty flow files
-

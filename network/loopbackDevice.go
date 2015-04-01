@@ -6,17 +6,17 @@
 package network
 
 import (
-	"time"
 	"code.google.com/p/gopacket"
+	"time"
 )
 
 //TODO: Embed interface stats, rather than copying them from regular interface
 type LoopbackInterface struct {
-	rxChannels map[uint64] chan gopacket.Packet
-	rxPkts	uint64
-	rxBytes	uint64
-	txPkts	uint64
-	txBytes	uint64
+	rxChannels map[uint64]chan gopacket.Packet
+	rxPkts     uint64
+	rxBytes    uint64
+	txPkts     uint64
+	txBytes    uint64
 }
 
 func NewLoopback() *LoopbackInterface {
@@ -47,7 +47,7 @@ func (l *LoopbackInterface) TxStats() (txPkts, txBytes uint64) {
 }
 
 func (l *LoopbackInterface) RxStats() (rxPkts, rxBytes uint64) {
-	return l.TxStats()  // By definition, Rx == Tx
+	return l.TxStats() // By definition, Rx == Tx
 }
 
 func (l *LoopbackInterface) PktStats() (rxPkts, txPkts uint64) {
