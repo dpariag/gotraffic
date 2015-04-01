@@ -1,9 +1,9 @@
 package flow
 
 import (
-	"code.google.com/p/gopacket"
 	"fmt"
 	"git.svc.rocks/dpariag/gotraffic/network"
+	"github.com/google/gopacket"
 	"time"
 )
 

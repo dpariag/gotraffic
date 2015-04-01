@@ -1,9 +1,9 @@
 package network
 
 import (
-	"code.google.com/p/gopacket"
-	"code.google.com/p/gopacket/pcap"
 	"fmt"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/pcap"
 	"time"
 )
 

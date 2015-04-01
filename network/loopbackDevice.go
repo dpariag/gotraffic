@@ -6,7 +6,7 @@
 package network
 
 import (
-	"code.google.com/p/gopacket"
+	"github.com/google/gopacket"
 	"time"
 )
 
