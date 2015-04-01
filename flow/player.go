@@ -9,14 +9,14 @@ import (
 
 type Player struct {
 	flow	Flow					// Flow being played
-	iface	network.Interface		// Interface that packets are written to 
+	iface	network.Device			// Interface that packets are written to 
 	in		chan gopacket.Packet	// channel that packets are returned on 
 	rxPkts	uint64					// Num of packets received from in 
-	txPkts	uint64					// Num of packets sent to out
+	txPkts	uint64					// Num of packets sent to iface 
 	done	chan *Player			// Written on completion (allows easy replay)
 }
 
-func NewPlayer(iface network.Interface, f *Flow) *Player {
+func NewPlayer(iface network.Device, f *Flow) *Player {
 	p := Player{in:make(chan gopacket.Packet, len(f.pkts)),
 				iface:iface, flow:*f, rxPkts:0, txPkts:0}
 	p.iface.Register(f.Hash(), p.in)
@@ -36,7 +36,7 @@ func (fp *Player) Play() {
 	// Read packets from input channel
 	go fp.readPackets()
 
-	// Send packets to output channel, respecting inter-packet gaps
+	// Write packets to the interface, respecting inter-packet gaps
 	start := time.Now()
 	fmt.Printf("Starting...flow has %v pkts\n", len(fp.flow.pkts))
 	for _,p := range fp.flow.pkts {

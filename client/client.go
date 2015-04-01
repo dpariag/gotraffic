@@ -20,8 +20,8 @@ func main() {
 	player.Play()
 
 	iface.Shutdown(5*time.Second)
-	rxPkts, rxBytes := iface.RxStats()
-	txPkts, txBytes := iface.TxStats()
+	rxPkts, txPkts := iface.PktStats()
+	rxBytes, txBytes := iface.ByteStats()
 	fmt.Printf("Packets: rx: %v tx: %v\n", rxPkts, txPkts)
 	fmt.Printf("Bytes  : rx: %v tx: %v\n", rxBytes, txBytes)
 }

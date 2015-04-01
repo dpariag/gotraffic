@@ -37,9 +37,9 @@ func verifyFlowStats(p *Player, f *Flow, t *testing.T) {
 	}
 }
 
-// TODO: i should be network.Interface
+// TODO: i should be network.Device
 // Check that the player's sent and received packet counts match the interface
-func verifyInterfaceStats(p *Player, i *network.LoopbackInterface, t *testing.T) {
+func verifyInterfaceStats(p *Player, i network.Device, t *testing.T) {
 	playerRxPkts, playerTxPkts := p.PktStats()
 	ifaceRxPkts, ifaceTxPkts := i.PktStats()
 

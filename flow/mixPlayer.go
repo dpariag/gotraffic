@@ -8,14 +8,14 @@ import (
 
 type MixPlayer struct {
 	mix				Mix					// The mix being played
-	iface			network.Interface	// The interface to write packets to (TODO: Need 2)
+	iface			network.Device		// The interface to write packets to (TODO: Need 2)
 	duration		time.Duration		// Duration of traffic replay
 	flowsStarted	uint64				// Number of flows started during replay
 	flowsCompleted	uint64				// Number of flows that have been completely replayed 
 	replayChan		chan *Player		// Completed players (can be restarted if necessary)
 }
 
-func NewMixPlayer(m *Mix, iface network.Interface, duration time.Duration) *MixPlayer {
+func NewMixPlayer(m *Mix, iface network.Device, duration time.Duration) *MixPlayer {
 	return &MixPlayer{mix: *m, iface:iface, duration:duration, replayChan:make(chan *Player, 10)}
 }
 
@@ -48,7 +48,7 @@ func (mp *MixPlayer) Play() {
 }
 
 func (mp *MixPlayer) playGroup(f *FlowGroup) {
-	// TODO: Each flow should be replayed with a different 5-tuple
+	// TODO: Each flow should be replayed with a different source IP 
 	for i := 0; i < int(f.Copies); i++ {
 		fp := NewPlayer(mp.iface, &f.Flow)
 		go mp.playFlow(fp)

@@ -16,8 +16,6 @@ type Device interface {
 	Init()
 	Register(hash uint64, c chan gopacket.Packet)
 	Send(p *gopacket.Packet)
-	RxStats() (rxPkts, rxBytes uint64)
-	TxStats() (txPkts, txBytes uint64)
 	PktStats() (rxPkts, txPkts uint64)
 	ByteStats() (rxBytes, txBytes uint64)
 	Shutdown(timeout time.Duration)
@@ -87,14 +85,6 @@ func (i *PCAPInterface) Shutdown(timeout time.Duration) {
 		time.Sleep(time.Second)
 	}
 	fmt.Printf("Waited %v for packets to be returned\n", time.Since(start))
-}
-
-func (i *PCAPInterface) RxStats() (rxPkts, rxBytes uint64) {
-	return i.rxPkts, i.rxBytes
-}
-
-func (i *PCAPInterface) TxStats() (txPkts, txBytes uint64) {
-	return i.txPkts, i.txBytes
 }
 
 func (i *PCAPInterface) PktStats() (rxPkts, txPkts uint64) {
