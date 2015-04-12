@@ -35,5 +35,5 @@ func TestICMPFlow(t *testing.T) {
 }
 
 func TestYouTubeFlow(t *testing.T) {
-	verifyFlow(t, "../captures/youtube.cap", &flowInfo{87, 4829350000, 7560})
+	verifyFlow(t, "../captures/youtube-short.cap", &flowInfo{87, 4829350000, 7560})
 }

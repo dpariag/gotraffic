@@ -7,15 +7,15 @@ import (
 )
 
 type MixPlayer struct {
-	mix            Mix               // The mix being played
-	iface          network.Interface // The interface to write packets to (TODO: Need 2)
-	duration       time.Duration     // Duration of traffic replay
-	flowsStarted   uint64            // Number of flows started during replay
-	flowsCompleted uint64            // Number of flows that have been completely replayed
-	replayChan     chan *Player      // Completed players (can be restarted if necessary)
+	mix            Mix            // The mix being played
+	iface          network.Device // The interface to write packets to (TODO: Need 2)
+	duration       time.Duration  // Duration of traffic replay
+	flowsStarted   uint64         // Number of flows started during replay
+	flowsCompleted uint64         // Number of flows that have been completely replayed
+	replayChan     chan *Player   // Completed players (can be restarted if necessary)
 }
 
-func NewMixPlayer(m *Mix, iface network.Interface, duration time.Duration) *MixPlayer {
+func NewMixPlayer(m *Mix, iface network.Device, duration time.Duration) *MixPlayer {
 	return &MixPlayer{mix: *m, iface: iface, duration: duration, replayChan: make(chan *Player, 10)}
 }
 
