@@ -5,7 +5,7 @@ import "errors"
 
 type FlowGroup struct {
 	Flow
-	Copies uint32 // # of copies to be replayed concurrently
+	Copies uint64 // # of copies to be replayed concurrently
 }
 
 type Mix struct {
@@ -19,9 +19,9 @@ func NewMix() *Mix {
 	return &Mix{}
 }
 
-func (m *Mix) AddFlow(f *Flow, copies uint32) {
+func (m *Mix) AddFlow(f *Flow, copies uint64) {
 	m.flows = append(m.flows, FlowGroup{*f, copies})
-	m.numFlows += uint64(copies)
+	m.numFlows += copies
 	m.bitrate += (f.Bitrate() * float64(copies))
 }
 
@@ -39,5 +39,6 @@ func (m *Mix) NextFlowGroup() (*FlowGroup, error) {
 		m.index++
 		return &fg, nil
 	}
+	m.index = 0
 	return nil, errors.New("No more flow groups")
 }

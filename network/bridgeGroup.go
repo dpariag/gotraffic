@@ -5,27 +5,29 @@ import (
 	"time"
 )
 
+//TODO: These stats structs are reusable. Move into their own package
+
 type Stats struct {
 	Bytes   uint64
 	Packets uint64
 }
 
-type DeviceStats struct {
+type DirectionalStats struct {
 	Rx Stats
 	Tx Stats
 }
 
 type BridgeGroupStats struct {
-	client DeviceStats
-	server DeviceStats
+	Client DirectionalStats
+	Server DirectionalStats
 }
 
 type BridgeGroup interface {
-	Register(flows []gopacket.Flow, c chan gopacket.Packet)
+	Register(hash uint64, c chan gopacket.Packet)
 	Deregister([]gopacket.Flow)
 	SendClientPacket(p gopacket.Packet)
 	SendServerPacket(p gopacket.Packet)
-	GetStats() BridgeGroupStats
+	Stats() BridgeGroupStats
 	String() string
 	Shutdown(timeout time.Duration)
 }

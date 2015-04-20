@@ -17,38 +17,45 @@ func flowReplayTolerances(f *Flow) (minReplayTime, maxReplayTime int64) {
 
 // Check that the player received every packet it sent (no packet drops)
 func verifyPlayerStats(p *Player, t *testing.T) {
-	playerRxPkts, playerTxPkts := p.PktStats()
+	playerStats := p.Stats()
 
-	if playerRxPkts != playerTxPkts {
-		t.Errorf("Error: Player sent: %v packets, but received: %v packets\n", playerTxPkts, playerRxPkts)
+	if playerStats.Rx.Packets != playerStats.Tx.Packets {
+		t.Errorf("Error: Player sent: %v packets, but received: %v packets\n",
+				playerStats.Tx.Packets, playerStats.Rx.Packets)
 	}
 
-	if p.DroppedPkts() != 0 {
-		t.Errorf("Error: Flow player reports %v dropped packets\n", p.DroppedPkts())
+	if playerStats.Rx.Bytes != playerStats.Tx.Bytes {
+		t.Errorf("Error: Player sent %v bytes, but received: %v bytes\n",
+				playerStats.Tx.Bytes, playerStats.Rx.Bytes)
 	}
 }
 
 // Check that the player sent packet count matches the flow packet count
 func verifyFlowStats(p *Player, f *Flow, t *testing.T) {
-	_, playerTxPkts := p.PktStats()
-	flowPkts := f.NumPkts()
-	if playerTxPkts != flowPkts {
-		t.Errorf("Player sent %v pkts. Flow contains %v pkts\n", playerTxPkts, flowPkts)
+	playerStats := p.Stats()
+
+	if playerStats.Tx.Packets != f.NumPkts() {
+		t.Errorf("Player sent %v pkts. Flow contains %v pkts\n", playerStats.Tx.Packets, f.NumPkts())
+	}
+
+	if playerStats.Tx.Bytes != f.NumBytes() {
+		t.Errorf("Player sent %v bytes. Flow contains %v bytes\n", playerStats.Tx.Bytes, f.NumBytes())
 	}
 }
 
-// TODO: i should be network.Device
 // Check that the player's sent and received packet counts match the interface
-func verifyInterfaceStats(p *Player, i network.Device, t *testing.T) {
-	playerRxPkts, playerTxPkts := p.PktStats()
-	ifaceRxPkts, ifaceTxPkts := i.PktStats()
+func verifyBridgeStats(p *Player, bg network.BridgeGroup, t *testing.T) {
+	playerStats := p.Stats()
+	bgStats := bg.Stats()
 
-	if playerTxPkts != ifaceTxPkts {
-		t.Errorf("Player TxPkts: %v Interface TxPkts: %v\n", playerTxPkts, ifaceTxPkts)
+	bridgeTxPkts := bgStats.Client.Tx.Packets + bgStats.Server.Tx.Packets
+	if playerStats.Tx.Packets != bridgeTxPkts {
+		t.Errorf("Player TxPkts: %v Bridge TxPkts: %v\n", playerStats.Tx.Packets, bridgeTxPkts)
 	}
 
-	if playerRxPkts != ifaceRxPkts {
-		t.Errorf("Player RxPkts: %v Interface RxPkts: %v\n", playerRxPkts, ifaceRxPkts)
+	bridgeRxPkts := bgStats.Client.Rx.Packets + bgStats.Server.Rx.Packets
+	if playerStats.Rx.Packets != bridgeRxPkts {
+		t.Errorf("Player RxPkts: %v Bridge RxPkts: %v\n", playerStats.Rx.Packets, bridgeRxPkts)
 	}
 }
 
@@ -67,37 +74,35 @@ func verifyReplayTime(replayTime time.Duration, f *Flow, numReplays int64, t *te
 
 func TestSingleFlowPlay(t *testing.T) {
 	flow := NewFlow("../captures/ping.cap")
-	iface := network.NewLoopback()
-	iface.Init()
-	player := NewPlayer(iface, flow)
+	bridge := network.NewLoopbackBridgeGroup()
+	player := NewPlayer(bridge, flow)
 
 	start := time.Now()
 	player.Play()
-	iface.Shutdown(5 * time.Second)
+	bridge.Shutdown(5 * time.Second)
 	elapsed := time.Since(start)
 
 	verifyPlayerStats(player, t)
 	verifyFlowStats(player, flow, t)
-	verifyInterfaceStats(player, iface, t)
+	verifyBridgeStats(player, bridge, t)
 	verifyReplayTime(elapsed, flow, 1, t)
 }
 
 func TestMultipleFlowReplay(t *testing.T) {
 	flow := NewFlow("../captures/ping.cap")
-	iface := network.NewLoopback()
-	iface.Init()
-	player := NewPlayer(iface, flow)
+	bridge := network.NewLoopbackBridgeGroup()
+	player := NewPlayer(bridge, flow)
 	done := make(chan *Player)
 
 	start := time.Now()
 	go player.Replay(done)
-	<-done
+	player = <-done
 	go player.Replay(done)
 	<-done
-	iface.Shutdown(5 * time.Second)
+	bridge.Shutdown(5 * time.Second)
 	elapsed := time.Since(start)
 
 	verifyPlayerStats(player, t)
-	verifyInterfaceStats(player, iface, t)
+	verifyBridgeStats(player, bridge, t)
 	verifyReplayTime(elapsed, flow, 2, t)
 }
