@@ -1,53 +1,62 @@
-// A conceptual loopback interface, intended primarily for unit testing
-// Packets written to this interface are immediately returned to the interface
+// A conceptual loopback bridge group, intended primarily for unit testing
+// Packets written to this bridge group are immediately returned to the interface
 // Registered listeners can be notified immediately
-// Requires no underlying NIC
+// Requires no underlying physical device 
 
 package network
 
 import (
+	"github.com/google/gopacket"
 	"time"
-	"code.google.com/p/gopacket"
 )
 
-//TODO: Embed interface stats, rather than copying them from regular interface
-type LoopbackDevice struct {
-	rxChannels map[uint64] chan gopacket.Packet
-	rxPkts	uint64
-	rxBytes	uint64
-	txPkts	uint64
-	txBytes	uint64
+type LoopbackBridgeGroup struct {
+	channels map[uint64] chan gopacket.Packet
+	stats BridgeGroupStats
 }
 
-func NewLoopback() *LoopbackDevice {
-	i := LoopbackDevice{}
-	i.rxChannels = make(map[uint64]chan gopacket.Packet)
+func NewLoopbackBridgeGroup() *LoopbackBridgeGroup {
+	i := LoopbackBridgeGroup{}
+	i.channels = make(map[uint64]chan gopacket.Packet)
 	return &i
 }
 
-// Register a (hash, channel) pair with the interface.
-// Received packets are returned to the channel whose hash matches the packet hash
-func (l *LoopbackDevice) Register(hash uint64, c chan gopacket.Packet) {
-	l.rxChannels[hash] = c
+// Register flows with the interface.
+func (l *LoopbackBridgeGroup) Register(hash uint64, c chan gopacket.Packet) {
+	l.channels[hash] = c
 }
 
-func (l *LoopbackDevice) Init() {}
-
-func (l *LoopbackDevice) Send(p *gopacket.Packet) {
-	l.txPkts++
-	l.txBytes += uint64((*p).Metadata().CaptureInfo.CaptureLength)
-	l.rxPkts = l.txPkts
-	l.rxBytes = l.txBytes
-	ch := l.rxChannels[(*p).NetworkLayer().NetworkFlow().FastHash()]
-	ch <- *p
+func (l *LoopbackBridgeGroup) Deregister(flows []gopacket.Flow) {
 }
 
-func (l *LoopbackDevice) PktStats() (rxPkts, txPkts uint64) {
-	return l.rxPkts, l.txPkts
+func (l *LoopbackBridgeGroup) SendClientPacket(p gopacket.Packet) {
+	l.stats.Client.Tx.Packets++
+	l.stats.Client.Tx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
+	l.stats.Server.Rx.Packets++
+	l.stats.Server.Rx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
+	ch := l.channels[p.NetworkLayer().NetworkFlow().FastHash()]
+	if ch != nil {
+		ch <- p
+	}
 }
 
-func (l *LoopbackDevice) ByteStats() (rxBytes, txBytes uint64) {
-	return l.rxBytes, l.txBytes
+func (l *LoopbackBridgeGroup) SendServerPacket(p gopacket.Packet) {
+	l.stats.Server.Tx.Packets++
+	l.stats.Server.Tx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
+	l.stats.Client.Rx.Packets++
+	l.stats.Client.Rx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
+	ch := l.channels[p.NetworkLayer().NetworkFlow().FastHash()]
+	if ch != nil {
+		ch <- p
+	}
 }
 
-func (l *LoopbackDevice) Shutdown(timeout time.Duration) {}
+func (l *LoopbackBridgeGroup) Shutdown(timeout time.Duration) {}
+
+func (l *LoopbackBridgeGroup) Stats() BridgeGroupStats {
+	return l.stats
+}
+
+func (l *LoopbackBridgeGroup) String() string {
+	return "loopbackBridgeGroup"
+}

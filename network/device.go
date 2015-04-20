@@ -2,13 +2,13 @@ package network
 
 import (
 	"fmt"
+	"github.com/google/gopacket"
+	"github.com/google/gopacket/pcap"
 	"time"
-	"code.google.com/p/gopacket"
-	"code.google.com/p/gopacket/pcap"
 )
 
 func printPacket(prefix string, p *gopacket.Packet) {
-	src,dst := (*p).NetworkLayer().NetworkFlow().Endpoints()
+	src, dst := (*p).NetworkLayer().NetworkFlow().Endpoints()
 	fmt.Println(prefix, src, " --> ", dst)
 }
 
@@ -22,17 +22,17 @@ type Device interface {
 }
 
 type PCAPInterface struct {
-	handle *pcap.Handle
-	txChan chan gopacket.Packet
-	rxChannels map[uint64] chan gopacket.Packet
+	handle     *pcap.Handle
+	txChan     chan gopacket.Packet
+	rxChannels map[uint64]chan gopacket.Packet
 
-	rxPkts	uint64
-	rxBytes	uint64
-	txPkts	uint64
-	txBytes	uint64
+	rxPkts  uint64
+	rxBytes uint64
+	txPkts  uint64
+	txBytes uint64
 }
 
-func NewPCAPInterface(name string, ) Device {
+func NewPCAPInterface(name string) Device {
 	i := PCAPInterface{}
 	//TODO: Catch error
 	i.handle, _ = pcap.OpenLive(name, 2048, true, pcap.BlockForever)
@@ -70,7 +70,7 @@ func (i *PCAPInterface) sendPackets() {
 func (i *PCAPInterface) readPackets() {
 	fmt.Println("Reader: Listening for packets.")
 	packetSource := gopacket.NewPacketSource(i.handle, i.handle.LinkType())
-	for p:= range packetSource.Packets() {
+	for p := range packetSource.Packets() {
 		//printPacket("R:", &p)
 		i.rxPkts++
 		i.rxBytes += uint64(p.Metadata().CaptureInfo.CaptureLength)

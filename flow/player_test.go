@@ -66,7 +66,7 @@ func verifyReplayTime(replayTime time.Duration, f *Flow, numReplays int64, t *te
 }
 
 func TestSingleFlowPlay(t *testing.T) {
-	flow := NewFlow("captures/ping.cap")
+	flow := NewFlow("../captures/ping.cap")
 	iface := network.NewLoopback()
 	iface.Init()
 	player := NewPlayer(iface, flow)
@@ -83,7 +83,7 @@ func TestSingleFlowPlay(t *testing.T) {
 }
 
 func TestMultipleFlowReplay(t *testing.T) {
-	flow := NewFlow("captures/ping.cap")
+	flow := NewFlow("../captures/ping.cap")
 	iface := network.NewLoopback()
 	iface.Init()
 	player := NewPlayer(iface, flow)

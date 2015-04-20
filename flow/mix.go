@@ -5,14 +5,14 @@ import "errors"
 
 type FlowGroup struct {
 	Flow
-	Copies uint32	// # of copies to be replayed concurrently
+	Copies uint32 // # of copies to be replayed concurrently
 }
 
 type Mix struct {
-	flows []FlowGroup
-	numFlows uint64		// including all copies
-	bitrate	float64		// bps of all concurrent flows
-	index	uint64		// Index of next flow in the flow group
+	flows    []FlowGroup
+	numFlows uint64  // including all copies
+	bitrate  float64 // bps of all concurrent flows
+	index    uint64  // Index of next flow in the flow group
 }
 
 func NewMix() *Mix {

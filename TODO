@@ -1,0 +1,39 @@
+TODO:
+-----
+	- Design diagram
+	- Rework stats structs to be re-usable across players and devices
+	- Add mixPlayer stats to enable unit testing
+	- Allow more than one copy of a flow to be played from a traffic mix (registration bug)
+	- Figure out a better API for mix (NextFlowGroup is weak)
+	- Write a player interface
+	- Write a stats interface (bytes/packets)
+	- Make file names consistent. Avoid mix of CamelCase and underscores
+	- Measure packet latency (command line option?)
+	- Read and Write packets using AF_PACKET 
+	- Make sure channels are directional when possible
+	- Figure out how to end the application after a certain duration and shutdown cleanly 
+	- Investigate passing pointers to gopacket.Packets on the BridgeGroup channels
+	- Review pointer and non-pointer receivers. Clean up as needed.
+	- When mixPlayer restarts a flow, it should use a different 5-tuple
+	- Think about how runtime stats will be collected/reported. Do you need:
+		- interface/bridge group stats?
+		- per flow stats?
+		- per protocol stats?
+	
+Completed
+---------
+	- Read packets using a PCAP reader
+	- Read packets using PF_RING reader
+	- Count dropped packets (optional?)
+	- Export duration, and bitrate from a flow
+	- Separate interface mgmt into an "L3" layer
+	- Implement first cut of flow.mix and flow.mixPlayer according to notes in Gmail
+	- Add stats to Network.Interface
+	- Write a bridge group interface 
+	- Implement a fake bridge group for unit testing
+	- Write interface for BridgeGroup stats
+	- flow player should send client/server packets to the right 1/2 of the bridge group 
+	- Rewind git repo to remove Chris' changes
+	- Add byte stats to flow.Player (currently only counts packets)
+	- Fix bug where player stats accumulate in the mix player
+	- Unit test mixPlayer

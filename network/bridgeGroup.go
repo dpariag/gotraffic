@@ -1,12 +1,12 @@
 package network
 
 import (
+	"github.com/google/gopacket"
 	"time"
-	"code.google.com/p/gopacket"
 )
 
 type Stats struct {
-	Bytes  	uint64 
+	Bytes   uint64
 	Packets uint64
 }
 
@@ -25,7 +25,7 @@ type BridgeGroup interface {
 	Deregister([]gopacket.Flow)
 	SendClientPacket(p gopacket.Packet)
 	SendServerPacket(p gopacket.Packet)
-	GetStats() (BridgeGroupStats)
+	GetStats() BridgeGroupStats
 	String() string
 	Shutdown(timeout time.Duration)
 }
