@@ -1,12 +1,11 @@
 package network
 
 import (
-	"github.com/google/gopacket"
 	"time"
+	"github.com/google/gopacket"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 )
-
-//TODO: These stats structs are reusable. Move into their own package
-
+/*
 type Stats struct {
 	Bytes   uint64
 	Packets uint64
@@ -16,10 +15,11 @@ type DirectionalStats struct {
 	Rx Stats
 	Tx Stats
 }
+*/
 
 type BridgeGroupStats struct {
-	Client DirectionalStats
-	Server DirectionalStats
+	Client stats.Directional
+	Server stats.Directional
 }
 
 type BridgeGroup interface {

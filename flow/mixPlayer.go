@@ -3,12 +3,13 @@ package flow
 import (
 	"fmt"
 	"git.svc.rocks/dpariag/gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 	"time"
 	"sync"
 )
 
 type MixPlayerStats struct {
-	network.DirectionalStats			// For bytes and packets
+	stats.Directional					// For bytes and packets
 	flowsStarted	uint64				// Number of flows started during replay
 	flowsCompleted	uint64				// Number of flows that have been completely replayed 
 }

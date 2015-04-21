@@ -3,6 +3,7 @@ package flow
 import (
 	"fmt"
 	"git.svc.rocks/dpariag/gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 	"github.com/google/gopacket"
 	"time"
 )
@@ -11,7 +12,7 @@ type Player struct {
 	flow	Flow					// Flow being played
 	bridge	network.BridgeGroup		// Interface that packets are written to 
 	in		chan gopacket.Packet	// channel that packets are returned on 
-	stats	network.DirectionalStats
+	stats	stats.Directional		// Rx and Tx stats
 	done	chan *Player			// Written on completion (allows easy replay)
 }
 
@@ -60,6 +61,6 @@ func (fp *Player) Replay(done chan *Player) {
 	done <- fp
 }
 
-func (fp *Player) Stats() network.DirectionalStats {
+func (fp *Player) Stats() stats.Directional {
 	return fp.stats
 }
