@@ -6,8 +6,8 @@
 package network
 
 import (
-	"github.com/google/gopacket"
 	"time"
+	"github.com/google/gopacket"
 )
 
 type LoopbackBridgeGroup struct {
@@ -16,14 +16,12 @@ type LoopbackBridgeGroup struct {
 }
 
 func NewLoopbackBridgeGroup() *LoopbackBridgeGroup {
-	i := LoopbackBridgeGroup{}
-	i.channels = make(map[uint64]chan gopacket.Packet)
-	return &i
+	return &LoopbackBridgeGroup{channels:make(map[uint64]chan gopacket.Packet)}
 }
 
 // Register flows with the interface.
-func (l *LoopbackBridgeGroup) Register(hash uint64, c chan gopacket.Packet) {
-	l.channels[hash] = c
+func (l *LoopbackBridgeGroup) Register(ep gopacket.Endpoint, c chan gopacket.Packet) {
+	l.channels[ep.FastHash()] = c
 }
 
 func (l *LoopbackBridgeGroup) Deregister(flows []gopacket.Flow) {
@@ -34,7 +32,7 @@ func (l *LoopbackBridgeGroup) SendClientPacket(p gopacket.Packet) {
 	l.stats.Client.Tx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
 	l.stats.Server.Rx.Packets++
 	l.stats.Server.Rx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
-	ch := l.channels[p.NetworkLayer().NetworkFlow().FastHash()]
+	ch := l.channels[p.NetworkLayer().NetworkFlow().Src().FastHash()]
 	if ch != nil {
 		ch <- p
 	}
@@ -45,7 +43,7 @@ func (l *LoopbackBridgeGroup) SendServerPacket(p gopacket.Packet) {
 	l.stats.Server.Tx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
 	l.stats.Client.Rx.Packets++
 	l.stats.Client.Rx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
-	ch := l.channels[p.NetworkLayer().NetworkFlow().FastHash()]
+	ch := l.channels[p.NetworkLayer().NetworkFlow().Src().FastHash()]
 	if ch != nil {
 		ch <- p
 	}

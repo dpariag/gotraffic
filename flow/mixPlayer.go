@@ -2,10 +2,11 @@ package flow
 
 import (
 	"fmt"
-	"git.svc.rocks/dpariag/gotraffic/network"
-	"git.svc.rocks/dpariag/gotraffic/stats"
 	"time"
 	"sync"
+	"net"
+	"git.svc.rocks/dpariag/gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 )
 
 type MixPlayerStats struct {
@@ -18,13 +19,16 @@ type MixPlayerStats struct {
 type MixPlayer struct {
 	mix				Mix					// The mix being played
 	bridge			network.BridgeGroup	// The bridge to write packets to
+	ipGen			network.IPGenerator	// Generate IPs for replay
 	stats			MixPlayerStats		// Stats for the player
 	statsLock		sync.Mutex			// Serialize concurrent updates
 	replayChan		chan *Player		// Completed players (can be restarted if necessary)
 }
 
 func NewMixPlayer(m *Mix, bridge network.BridgeGroup) *MixPlayer {
-	return &MixPlayer{mix: *m, bridge:bridge, replayChan:make(chan *Player, 10)}
+	return &MixPlayer{mix:*m, bridge:bridge,
+					  ipGen:network.NewSequentialIPGenerator(net.ParseIP("10.0.0.1")),
+				      replayChan:make(chan *Player, 10)}
 }
 
 func (mp *MixPlayer) Stats() MixPlayerStats {
@@ -46,45 +50,42 @@ func (mp *MixPlayer) Play(duration time.Duration) {
 
 		if time.Since(start) > duration {
 			mp.updateStats(replay)
-			fmt.Printf("Time's up. Waiting for %v player to complete\n", 
+			fmt.Printf("Time's up. Waiting for %v player to complete\n",
 						mp.stats.flowsStarted - mp.stats.flowsCompleted)
 			for mp.stats.flowsCompleted < mp.stats.flowsStarted {
 				replay := <-mp.replayChan
 				mp.stats.flowsCompleted++
 				mp.updateStats(replay)
-				fmt.Printf("Started: %v, Completed: %v\n", 
+				fmt.Printf("Started: %v, Completed: %v\n",
 							mp.stats.flowsStarted, mp.stats.flowsCompleted)
 			}
 			return
 		}
-		fmt.Printf("restarting flow @  %v...\n", time.Now().Sub(start))
-		mp.playFlow(replay)
+		//fmt.Printf("restarting flow @  %v...\n", time.Now().Sub(start))
+		mp.playFlow(replay, mp.ipGen.GenerateIP())
 	}
 
 }
 
 func (mp *MixPlayer) playGroup(f *FlowGroup) {
-	// TODO: Each flow should be replayed with a different source IP 
 	for i := 0; i < int(f.Copies); i++ {
-		// TODO: Bug! NewPlayers can't Register() while other player are playing
+		// TODO: Bug! NewPlayers can't Register() while other players are playing
 		fp := NewPlayer(mp.bridge, &f.Flow)
-		mp.playFlow(fp)
+		mp.playFlow(fp, mp.ipGen.GenerateIP())
 	}
 }
 
-func (mp *MixPlayer) playFlow(fp *Player) {
+func (mp *MixPlayer) playFlow(fp *Player, srcIP net.IP) {
 	mp.stats.flowsStarted++
-	go fp.Replay(mp.replayChan)
+	go fp.Replay(srcIP, mp.replayChan)
 }
 
 func (mp *MixPlayer) updateStats(fp *Player) {
 	mp.statsLock.Lock()
 	playerStats := fp.Stats()
-	fmt.Printf("Player stats: %v\n", playerStats.Rx.Bytes)
 	mp.stats.Rx.Packets += playerStats.Rx.Packets
 	mp.stats.Tx.Packets += playerStats.Tx.Packets
 	mp.stats.Rx.Bytes += playerStats.Rx.Bytes
 	mp.stats.Tx.Bytes += playerStats.Tx.Bytes
 	mp.statsLock.Unlock()
 }
-

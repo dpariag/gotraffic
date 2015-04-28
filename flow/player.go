@@ -1,11 +1,12 @@
 package flow
 
 import (
-	"fmt"
+	//"fmt"
+	"net"
+	"time"
+	"github.com/google/gopacket"
 	"git.svc.rocks/dpariag/gotraffic/network"
 	"git.svc.rocks/dpariag/gotraffic/stats"
-	"github.com/google/gopacket"
-	"time"
 )
 
 type Player struct {
@@ -19,7 +20,6 @@ type Player struct {
 func NewPlayer(bridge network.BridgeGroup, f *Flow) *Player {
 	p := Player{in:make(chan gopacket.Packet, len(f.pkts)),
 				bridge:bridge, flow:*f}
-	p.bridge.Register(f.Hash(), p.in)
 	return &p
 }
 
@@ -32,31 +32,44 @@ func (fp *Player) readPackets() {
 	}
 }
 
-func (fp *Player) Play() {
-	// Read packets from input channel
+func (fp *Player) register(srcIP net.IP) {
+	firstPkt, err := newPacket(fp.flow.pkts[0], srcIP)
+	if err != nil {
+		panic(err)
+	}
+	fp.bridge.Register(firstPkt.NetworkLayer().NetworkFlow().Src(), fp.in)
+}
+
+func (fp *Player) Play(srcIP net.IP) {
+	// Register for returned packets
+	fp.register(srcIP)
 	go fp.readPackets()
 
 	// Write packets to the interface, respecting inter-packet gaps
-	start := time.Now()
-	fmt.Printf("Starting...flow has %v pkts\n", len(fp.flow.pkts))
+	//start := time.Now()
+	//fmt.Printf("Starting...playing %v pkts from %v\n", len(fp.flow.pkts), srcIP.String())
 	for _, p := range fp.flow.pkts {
-		// Send the embedded packet to the correct half of the bridge group
+		// Clone the packet, re-writing the source IP and send it to correct side of the bridge group
+		newPkt,err := newPacket(p, srcIP)
+		if err != nil {
+			panic(err)
+		}
 		if p.Packet.NetworkLayer().NetworkFlow().Src() == fp.flow.Client() {
-			fp.bridge.SendClientPacket(p.Packet)
+			fp.bridge.SendClientPacket(newPkt)
 		} else {
-			fp.bridge.SendServerPacket(p.Packet)
+			fp.bridge.SendServerPacket(newPkt)
 		}
 		fp.stats.Tx.Packets++
 		fp.stats.Tx.Bytes += uint64(p.Packet.Metadata().CaptureInfo.CaptureLength)
 		time.Sleep(p.Gap)
 	}
-	fmt.Printf("Done flow playback. Elapsed: %v\n", time.Now().Sub(start))
+	//fmt.Printf("Done flow playback. Elapsed: %v\n", time.Now().Sub(start))
 }
 
 // Play a flow, and signal completion by writing fp to the given channel upon completion
 // This allows the channel owner to easily restart the flow
-func (fp *Player) Replay(done chan *Player) {
-	fp.Play()
+func (fp *Player) Replay(srcIP net.IP, done chan *Player) {
+	fp.Play(srcIP)
 	// TODO: Wait for all packets to be read back before signaling completion
 	done <- fp
 }

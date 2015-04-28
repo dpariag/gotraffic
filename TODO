@@ -1,13 +1,13 @@
 TODO:
 -----
-	- Design diagram
-	- Rework stats structs to be re-usable across players and devices
-	- Add mixPlayer stats to enable unit testing
+	- Test the API that allows flow IP addresses to be re-written
+	- Devices should auto-start?
+	- Write a stats interface (bytes/packets)
 	- Allow more than one copy of a flow to be played from a traffic mix (registration bug)
 	- Figure out a better API for mix (NextFlowGroup is weak)
 	- Write a player interface
-	- Write a stats interface (bytes/packets)
-	- Make file names consistent. Avoid mix of CamelCase and underscores
+	- Design diagram
+	- Make file names consistent. File names are lower case with underscores.
 	- Measure packet latency (command line option?)
 	- Read and Write packets using AF_PACKET 
 	- Make sure channels are directional when possible
@@ -15,10 +15,6 @@ TODO:
 	- Investigate passing pointers to gopacket.Packets on the BridgeGroup channels
 	- Review pointer and non-pointer receivers. Clean up as needed.
 	- When mixPlayer restarts a flow, it should use a different 5-tuple
-	- Think about how runtime stats will be collected/reported. Do you need:
-		- interface/bridge group stats?
-		- per flow stats?
-		- per protocol stats?
 	
 Completed
 ---------
@@ -36,4 +32,10 @@ Completed
 	- Rewind git repo to remove Chris' changes
 	- Add byte stats to flow.Player (currently only counts packets)
 	- Fix bug where player stats accumulate in the mix player
+	- Add mixPlayer stats to enable unit testing
 	- Unit test mixPlayer
+	- Figure out if layers are separate from underlying packet data. Try serialization code
+      that is in the gopacket documentation
+	- Implement an IPAddress factory that players can use to obtain unique source IPs
+	- Rework stats structs to be re-usable across players and devices
+	- Make PCAP interface use stats.Directional

@@ -1,9 +1,10 @@
 package flow
 
 import (
-	"git.svc.rocks/dpariag/gotraffic/network"
 	"testing"
 	"time"
+	"net"
+	"git.svc.rocks/dpariag/gotraffic/network"
 )
 
 // Estimate minimum and maximum acceptable replay times for a flow
@@ -78,7 +79,7 @@ func TestSingleFlowPlay(t *testing.T) {
 	player := NewPlayer(bridge, flow)
 
 	start := time.Now()
-	player.Play()
+	player.Play(net.ParseIP("10.0.0.0"))
 	bridge.Shutdown(5 * time.Second)
 	elapsed := time.Since(start)
 
@@ -95,9 +96,10 @@ func TestMultipleFlowReplay(t *testing.T) {
 	done := make(chan *Player)
 
 	start := time.Now()
-	go player.Replay(done)
+	sourceIP := net.ParseIP("10.0.0.1")
+	go player.Replay(sourceIP ,done)
 	player = <-done
-	go player.Replay(done)
+	go player.Replay(sourceIP, done)
 	<-done
 	bridge.Shutdown(5 * time.Second)
 	elapsed := time.Since(start)

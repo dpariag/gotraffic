@@ -5,17 +5,6 @@ import (
 	"github.com/google/gopacket"
 	"git.svc.rocks/dpariag/gotraffic/stats"
 )
-/*
-type Stats struct {
-	Bytes   uint64
-	Packets uint64
-}
-
-type DirectionalStats struct {
-	Rx Stats
-	Tx Stats
-}
-*/
 
 type BridgeGroupStats struct {
 	Client stats.Directional
@@ -23,7 +12,7 @@ type BridgeGroupStats struct {
 }
 
 type BridgeGroup interface {
-	Register(hash uint64, c chan gopacket.Packet)
+	Register(ep gopacket.Endpoint, c chan gopacket.Packet)
 	Deregister([]gopacket.Flow)
 	SendClientPacket(p gopacket.Packet)
 	SendServerPacket(p gopacket.Packet)
