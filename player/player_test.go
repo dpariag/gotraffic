@@ -4,13 +4,14 @@ import (
 	"testing"
 	"time"
 	"net"
+	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
 )
 
 // Estimate minimum and maximum acceptable replay times for a flow
 // The calculated estimates are based on the number of packets in the flow
-func flowReplayTolerances(f *Flow) (minReplayTime, maxReplayTime int64) {
-	tolerance := int64(f.NumPkts() * 2000000) // 2ms per packet
+func flowReplayTolerances(f *flow.Flow) (minReplayTime, maxReplayTime int64) {
+	tolerance := int64(f.NumPackets() * 2000000) // 2ms per packet
 	minReplayTime = f.Duration().Nanoseconds() - tolerance
 	maxReplayTime = f.Duration().Nanoseconds() + tolerance
 	return minReplayTime, maxReplayTime
@@ -32,11 +33,12 @@ func verifyPlayerStats(p *Player, t *testing.T) {
 }
 
 // Check that the player sent packet count matches the flow packet count
-func verifyFlowStats(p *Player, f *Flow, t *testing.T) {
+func verifyFlowStats(p *Player, f *flow.Flow, t *testing.T) {
 	playerStats := p.Stats()
 
-	if playerStats.Tx.Packets != f.NumPkts() {
-		t.Errorf("Player sent %v pkts. Flow contains %v pkts\n", playerStats.Tx.Packets, f.NumPkts())
+	if playerStats.Tx.Packets != f.NumPackets() {
+		t.Errorf("Player sent %v pkts. Flow contains %v pkts\n",
+				  playerStats.Tx.Packets, f.NumPackets())
 	}
 
 	if playerStats.Tx.Bytes != f.NumBytes() {
@@ -62,7 +64,7 @@ func verifyBridgeStats(p *Player, bg network.BridgeGroup, t *testing.T) {
 
 // Check that the time taken to replay the flow is acceptable
 // Tolerate up to 2ms delay per packet
-func verifyReplayTime(replayTime time.Duration, f *Flow, numReplays int64, t *testing.T) {
+func verifyReplayTime(replayTime time.Duration, f *flow.Flow, numReplays int64, t *testing.T) {
 	minReplayTime, maxReplayTime := flowReplayTolerances(f)
 	minReplayTime = minReplayTime * numReplays
 	maxReplayTime = maxReplayTime * numReplays
@@ -74,7 +76,7 @@ func verifyReplayTime(replayTime time.Duration, f *Flow, numReplays int64, t *te
 }
 
 func TestSingleFlowPlay(t *testing.T) {
-	flow := NewFlow("../captures/ping.cap")
+	flow := flow.NewFlow("../captures/ping.cap")
 	bridge := network.NewLoopbackBridgeGroup()
 	player := NewPlayer(bridge, flow)
 
@@ -90,7 +92,7 @@ func TestSingleFlowPlay(t *testing.T) {
 }
 
 func TestMultipleFlowReplay(t *testing.T) {
-	flow := NewFlow("../captures/ping.cap")
+	flow := flow.NewFlow("../captures/ping.cap")
 	bridge := network.NewLoopbackBridgeGroup()
 	player := NewPlayer(bridge, flow)
 	done := make(chan *Player)

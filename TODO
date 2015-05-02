@@ -1,20 +1,21 @@
 TODO:
 -----
-	- Test the API that allows flow IP addresses to be re-written
-	- Devices should auto-start?
-	- Write a stats interface (bytes/packets)
-	- Allow more than one copy of a flow to be played from a traffic mix (registration bug)
-	- Figure out a better API for mix (NextFlowGroup is weak)
+	- Reorganize code into directories, make file names consistent 
 	- Write a player interface
+	- Fix the registration bug (bridge group registration is not concurrent-safe) 
+	- Figure out the semaphore overhead in the profile. Is it channels?
+	- Make sure flows are passed to players by pointer/reference not value
+	- Add more captures to the capture DB
+	- Test the API that allows flow IP addresses to be re-written
+	- Write a stats interface (bytes/packets)
+	- Figure out a better API for mix (NextFlowGroup is weak)
 	- Design diagram
-	- Make file names consistent. File names are lower case with underscores.
 	- Measure packet latency (command line option?)
+	- Devices should auto-start (no need for Init())?
 	- Read and Write packets using AF_PACKET 
 	- Make sure channels are directional when possible
 	- Figure out how to end the application after a certain duration and shutdown cleanly 
-	- Investigate passing pointers to gopacket.Packets on the BridgeGroup channels
 	- Review pointer and non-pointer receivers. Clean up as needed.
-	- When mixPlayer restarts a flow, it should use a different 5-tuple
 	
 Completed
 ---------
@@ -39,3 +40,5 @@ Completed
 	- Implement an IPAddress factory that players can use to obtain unique source IPs
 	- Rework stats structs to be re-usable across players and devices
 	- Make PCAP interface use stats.Directional
+	- Allow more than one copy of a flow to be played from a traffic mix
+	- When mixPlayer restarts a flow, it should use a different 5-tuple

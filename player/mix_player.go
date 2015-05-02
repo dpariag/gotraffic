@@ -5,6 +5,7 @@ import (
 	"time"
 	"sync"
 	"net"
+	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
 	"git.svc.rocks/dpariag/gotraffic/stats"
 )
@@ -17,7 +18,7 @@ type MixPlayerStats struct {
 
 //TODO: Should these be pointers (initialize by value too expensive?)
 type MixPlayer struct {
-	mix				Mix					// The mix being played
+	mix				flow.Mix			// The mix being played
 	bridge			network.BridgeGroup	// The bridge to write packets to
 	ipGen			network.IPGenerator	// Generate IPs for replay
 	stats			MixPlayerStats		// Stats for the player
@@ -25,7 +26,7 @@ type MixPlayer struct {
 	replayChan		chan *Player		// Completed players (can be restarted if necessary)
 }
 
-func NewMixPlayer(m *Mix, bridge network.BridgeGroup) *MixPlayer {
+func NewMixPlayer(m *flow.Mix, bridge network.BridgeGroup) *MixPlayer {
 	return &MixPlayer{mix:*m, bridge:bridge,
 					  ipGen:network.NewSequentialIPGenerator(net.ParseIP("10.0.0.1")),
 				      replayChan:make(chan *Player, 10)}
@@ -67,7 +68,7 @@ func (mp *MixPlayer) Play(duration time.Duration) {
 
 }
 
-func (mp *MixPlayer) playGroup(f *FlowGroup) {
+func (mp *MixPlayer) playGroup(f *flow.FlowGroup) {
 	for i := 0; i < int(f.Copies); i++ {
 		// TODO: Bug! NewPlayers can't Register() while other players are playing
 		fp := NewPlayer(mp.bridge, &f.Flow)

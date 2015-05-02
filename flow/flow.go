@@ -1,11 +1,9 @@
 package flow
 
 import (
-	"net"
 	"time"
 	"fmt"
 	"github.com/google/gopacket"
-	"github.com/google/gopacket/layers"
 	"github.com/google/gopacket/pcap"
 )
 
@@ -52,7 +50,11 @@ func (f *Flow) setDuration() {
 	f.duration = endTime.Sub(startTime)
 }
 
-func (f *Flow) NumPkts() uint64 {
+func (f *Flow) Packets() FlowPackets {
+	return f.pkts
+}
+
+func (f *Flow) NumPackets() uint64 {
 	return uint64(len(f.pkts))
 }
 
@@ -105,6 +107,7 @@ func printPacket(prefix string, p gopacket.Packet) {
 	fmt.Println(prefix, src, " --> ", dst)
 }
 
+/*
 //This modifies the gopacket layers, but not the underlying packet data
 func (f *Flow) rewriteIPs(srcIP net.IP, dstIP net.IP) {
 	for i := 0; i < len(f.pkts); i++ {
@@ -130,3 +133,4 @@ func (f *Flow) rewriteSourceIP(srcIp net.IP) FlowPackets {
 func (f *Flow) Clone(srcIp net.IP) Flow {
 	return Flow{f.rewriteSourceIP(srcIp), f.duration, f.numBytes, f.bitrate}
 }
+*/

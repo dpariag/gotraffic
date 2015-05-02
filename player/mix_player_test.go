@@ -1,12 +1,13 @@
 package flow
 
 import (
+	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
 	"time"
 	"testing"
 )
 
-func calculateFlowsToPlay(duration time.Duration, mix *Mix) uint64 {
+func calculateFlowsToPlay(duration time.Duration, mix *flow.Mix) uint64 {
 	var flowsToPlay uint64
 	for fg,err := mix.NextFlowGroup(); err == nil; fg,err = mix.NextFlowGroup() {
 		flowsPerDuration := uint64(((duration.Nanoseconds() / fg.Duration().Nanoseconds()) +  1))
@@ -17,9 +18,9 @@ func calculateFlowsToPlay(duration time.Duration, mix *Mix) uint64 {
 
 func TestReplayBasicMix(t *testing.T) {
 	bridge := network.NewLoopbackBridgeGroup()
-	mix := NewMix()
-	mix.AddFlow(NewFlow("../captures/ping.cap"), 1)
-	mix.AddFlow(NewFlow("../captures/youtube-short.cap"), 1)
+	mix := flow.NewMix()
+	mix.AddFlow(flow.NewFlow("../captures/ping.cap"), 1)
+	mix.AddFlow(flow.NewFlow("../captures/youtube-short.cap"), 1)
 	duration := 10 * time.Second
 	flowsToPlay := calculateFlowsToPlay(duration, mix)
 
