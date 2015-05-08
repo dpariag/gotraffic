@@ -1,22 +1,22 @@
 // A conceptual loopback bridge group, intended primarily for unit testing
 // Packets written to this bridge group are immediately returned to the interface
 // Registered listeners can be notified immediately
-// Requires no underlying physical device 
+// Requires no underlying physical device
 
 package network
 
 import (
-	"time"
 	"github.com/google/gopacket"
+	"time"
 )
 
 type LoopbackBridgeGroup struct {
-	channels map[uint64] chan gopacket.Packet
-	stats BridgeGroupStats
+	channels map[uint64]chan gopacket.Packet
+	stats    BridgeGroupStats
 }
 
 func NewLoopbackBridgeGroup() *LoopbackBridgeGroup {
-	return &LoopbackBridgeGroup{channels:make(map[uint64]chan gopacket.Packet)}
+	return &LoopbackBridgeGroup{channels: make(map[uint64]chan gopacket.Packet)}
 }
 
 // Register flows with the interface.

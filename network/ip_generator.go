@@ -6,6 +6,7 @@ import (
 
 type IPGenerator interface {
 	GenerateIP() net.IP
+	GenerateIPs(count uint64) []net.IP
 }
 
 type sequential struct {
@@ -24,6 +25,14 @@ func (s sequential) GenerateIP() net.IP {
 	return newIP
 }
 
+func (s sequential) GenerateIPs(count uint64) []net.IP {
+	ips := make([]net.IP, count)
+	for i := uint64(0); i < count; i++ {
+		ips[i] = s.GenerateIP()
+	}
+	return ips
+}
+
 func NewSequentialIPGenerator(seed net.IP) IPGenerator {
-	return sequential{seed:seed.To16()}
+	return sequential{seed: seed.To16()}
 }

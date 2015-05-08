@@ -1,16 +1,16 @@
-package flow
+package player
 
 import (
 	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
-	"time"
 	"testing"
+	"time"
 )
 
 func calculateFlowsToPlay(duration time.Duration, mix *flow.Mix) uint64 {
 	var flowsToPlay uint64
-	for fg,err := mix.NextFlowGroup(); err == nil; fg,err = mix.NextFlowGroup() {
-		flowsPerDuration := uint64(((duration.Nanoseconds() / fg.Duration().Nanoseconds()) +  1))
+	for fg, err := mix.NextFlowGroup(); err == nil; fg, err = mix.NextFlowGroup() {
+		flowsPerDuration := uint64(((duration.Nanoseconds() / fg.Duration().Nanoseconds()) + 1))
 		flowsToPlay += fg.Copies * flowsPerDuration
 	}
 	return flowsToPlay
@@ -26,7 +26,7 @@ func TestReplayBasicMix(t *testing.T) {
 
 	player := NewMixPlayer(mix, bridge)
 	player.Play(duration)
-	bridge.Shutdown(5*time.Second)
+	bridge.Shutdown(5 * time.Second)
 
 	bridgeStats := bridge.Stats()
 	playerStats := player.Stats()
@@ -37,7 +37,7 @@ func TestReplayBasicMix(t *testing.T) {
 
 	if playerStats.flowsStarted != playerStats.flowsCompleted {
 		t.Errorf("Player only completed %v/%v flows\n",
-				playerStats.flowsStarted, playerStats.flowsCompleted)
+			playerStats.flowsStarted, playerStats.flowsCompleted)
 	}
 
 	rxBytes := bridgeStats.Client.Rx.Bytes + bridgeStats.Server.Rx.Bytes

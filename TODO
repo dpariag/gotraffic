@@ -1,13 +1,14 @@
 TODO:
 -----
-	- Reorganize code into directories, make file names consistent 
 	- Write a player interface
-	- Fix the registration bug (bridge group registration is not concurrent-safe) 
+	- Add a player unit test for concurrent flow replay (two active players)
 	- Figure out the semaphore overhead in the profile. Is it channels?
+	- Write a unit test that checks packets are sent/rcvd in order
+	- FlowGroup should store flow pointers, not values
 	- Make sure flows are passed to players by pointer/reference not value
 	- Add more captures to the capture DB
 	- Test the API that allows flow IP addresses to be re-written
-	- Write a stats interface (bytes/packets)
+	- Write a RESTFUL stats interface (bytes/packets)
 	- Figure out a better API for mix (NextFlowGroup is weak)
 	- Design diagram
 	- Measure packet latency (command line option?)
@@ -20,7 +21,6 @@ TODO:
 Completed
 ---------
 	- Read packets using a PCAP reader
-	- Read packets using PF_RING reader
 	- Count dropped packets (optional?)
 	- Export duration, and bitrate from a flow
 	- Separate interface mgmt into an "L3" layer
@@ -42,3 +42,7 @@ Completed
 	- Make PCAP interface use stats.Directional
 	- Allow more than one copy of a flow to be played from a traffic mix
 	- When mixPlayer restarts a flow, it should use a different 5-tuple
+	- Reorganize code into directories, make file names consistent 
+	- Make sure players are not in the flow package.
+	- Fix the registration bug (bridge group registration is not concurrent-safe) 
+	- Add the ability to generate a slice if IPs

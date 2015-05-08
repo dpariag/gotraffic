@@ -2,10 +2,10 @@ package network
 
 import (
 	"fmt"
-	"time"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
-	"git.svc.rocks/dpariag/gotraffic/stats"
+	"time"
 )
 
 func printPacket(prefix string, p *gopacket.Packet) {
@@ -17,7 +17,7 @@ type Device interface {
 	Init()
 	Register(hash uint64, c chan gopacket.Packet)
 	Send(p *gopacket.Packet)
-	Stats() stats.Directional 
+	Stats() stats.Directional
 	Shutdown(timeout time.Duration)
 }
 

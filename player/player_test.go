@@ -1,11 +1,11 @@
-package flow
+package player
 
 import (
-	"testing"
-	"time"
-	"net"
 	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
+	"net"
+	"testing"
+	"time"
 )
 
 // Estimate minimum and maximum acceptable replay times for a flow
@@ -23,12 +23,12 @@ func verifyPlayerStats(p *Player, t *testing.T) {
 
 	if playerStats.Rx.Packets != playerStats.Tx.Packets {
 		t.Errorf("Error: Player sent: %v packets, but received: %v packets\n",
-				playerStats.Tx.Packets, playerStats.Rx.Packets)
+			playerStats.Tx.Packets, playerStats.Rx.Packets)
 	}
 
 	if playerStats.Rx.Bytes != playerStats.Tx.Bytes {
 		t.Errorf("Error: Player sent %v bytes, but received: %v bytes\n",
-				playerStats.Tx.Bytes, playerStats.Rx.Bytes)
+			playerStats.Tx.Bytes, playerStats.Rx.Bytes)
 	}
 }
 
@@ -38,7 +38,7 @@ func verifyFlowStats(p *Player, f *flow.Flow, t *testing.T) {
 
 	if playerStats.Tx.Packets != f.NumPackets() {
 		t.Errorf("Player sent %v pkts. Flow contains %v pkts\n",
-				  playerStats.Tx.Packets, f.NumPackets())
+			playerStats.Tx.Packets, f.NumPackets())
 	}
 
 	if playerStats.Tx.Bytes != f.NumBytes() {
@@ -76,12 +76,13 @@ func verifyReplayTime(replayTime time.Duration, f *flow.Flow, numReplays int64, 
 }
 
 func TestSingleFlowPlay(t *testing.T) {
+	ip := []net.IP{net.ParseIP("10.0.0.0")}
 	flow := flow.NewFlow("../captures/ping.cap")
 	bridge := network.NewLoopbackBridgeGroup()
-	player := NewPlayer(bridge, flow)
+	player := NewPlayer(bridge, flow, ip)
 
 	start := time.Now()
-	player.Play(net.ParseIP("10.0.0.0"))
+	player.Play()
 	bridge.Shutdown(5 * time.Second)
 	elapsed := time.Since(start)
 
@@ -92,16 +93,16 @@ func TestSingleFlowPlay(t *testing.T) {
 }
 
 func TestMultipleFlowReplay(t *testing.T) {
+	ip := []net.IP{net.ParseIP("10.0.0.1"), net.ParseIP("10.0.0.1")}
 	flow := flow.NewFlow("../captures/ping.cap")
 	bridge := network.NewLoopbackBridgeGroup()
-	player := NewPlayer(bridge, flow)
+	player := NewPlayer(bridge, flow, ip)
 	done := make(chan *Player)
 
 	start := time.Now()
-	sourceIP := net.ParseIP("10.0.0.1")
-	go player.Replay(sourceIP ,done)
+	go player.Replay(done)
 	player = <-done
-	go player.Replay(sourceIP, done)
+	go player.Replay(done)
 	<-done
 	bridge.Shutdown(5 * time.Second)
 	elapsed := time.Since(start)

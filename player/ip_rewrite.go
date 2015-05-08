@@ -1,13 +1,13 @@
 // Based on code from afiori
 
-package flow
+package player
 
 import (
 	"errors"
-	"net"
-	"time"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/layers"
+	"net"
+	"time"
 )
 
 // newPacket changes the source or destination ip of the network layer
