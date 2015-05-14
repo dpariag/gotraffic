@@ -2,7 +2,6 @@ package flow
 
 import (
 	"time"
-	"fmt"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
 )
@@ -101,36 +100,3 @@ func (f *Flow) ClientPackets() FlowPackets {
 func (f *Flow) ServerPackets() FlowPackets {
 	return f.endpointPackets(f.Server())
 }
-
-func printPacket(prefix string, p gopacket.Packet) {
-	src, dst := p.NetworkLayer().NetworkFlow().Endpoints()
-	fmt.Println(prefix, src, " --> ", dst)
-}
-
-/*
-//This modifies the gopacket layers, but not the underlying packet data
-func (f *Flow) rewriteIPs(srcIP net.IP, dstIP net.IP) {
-	for i := 0; i < len(f.pkts); i++ {
-		ip4 := f.pkts[i].NetworkLayer().(*layers.IPv4)
-		ip4.SrcIP = srcIP
-		ip4.DstIP = dstIP
-		printPacket("Rewrite:", f.pkts[i].Packet)
-	}
-}
-
-func (f *Flow) rewriteSourceIP(srcIp net.IP) FlowPackets {
-	pkts := make(FlowPackets, len(f.pkts))
-	for i := 0; i < len(f.pkts); i++ {
-		pkt,err := newPacket(f.pkts[i].Packet, srcIp)
-		if err != nil {
-			panic(err)
-		}
-		pkts[i] = FlowPacket{pkt, pkts[i].Gap}
-	}
-	return pkts
-}
-
-func (f *Flow) Clone(srcIp net.IP) Flow {
-	return Flow{f.rewriteSourceIP(srcIp), f.duration, f.numBytes, f.bitrate}
-}
-*/

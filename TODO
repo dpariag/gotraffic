@@ -1,8 +1,8 @@
 TODO:
 -----
-	- Write a player interface
+	- Improve stat names (stats.PlayerStats, stats.BridgeGroupStats, etc.)
 	- Add a player unit test for concurrent flow replay (two active players)
-	- Figure out the semaphore overhead in the profile. Is it channels?
+	- Patch kernel so you can profile on OSX 
 	- Write a unit test that checks packets are sent/rcvd in order
 	- FlowGroup should store flow pointers, not values
 	- Make sure flows are passed to players by pointer/reference not value
@@ -11,7 +11,7 @@ TODO:
 	- Write a RESTFUL stats interface (bytes/packets)
 	- Figure out a better API for mix (NextFlowGroup is weak)
 	- Design diagram
-	- Measure packet latency (command line option?)
+	- Measure packet latency
 	- Devices should auto-start (no need for Init())?
 	- Read and Write packets using AF_PACKET 
 	- Make sure channels are directional when possible
@@ -46,3 +46,5 @@ Completed
 	- Make sure players are not in the flow package.
 	- Fix the registration bug (bridge group registration is not concurrent-safe) 
 	- Add the ability to generate a slice if IPs
+	- Write a player interface
+	- Support starting/stopping flow replay at arbitrary times

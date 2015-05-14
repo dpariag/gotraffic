@@ -25,28 +25,31 @@ func TestReplayBasicMix(t *testing.T) {
 	flowsToPlay := calculateFlowsToPlay(duration, mix)
 
 	player := NewMixPlayer(mix, bridge)
-	player.Play(duration)
+	player.Play()
+	time.Sleep(duration)
+	player.Stop()
 	bridge.Shutdown(5 * time.Second)
 
 	bridgeStats := bridge.Stats()
 	playerStats := player.Stats()
 
-	if playerStats.flowsStarted != flowsToPlay {
-		t.Errorf("Player should have played %v flows\n", flowsToPlay)
+	if playerStats.FlowsStarted != flowsToPlay {
+		t.Errorf("Played %v flows in the mix. Should have played %v flows\n",
+		playerStats.FlowsStarted, flowsToPlay)
 	}
 
-	if playerStats.flowsStarted != playerStats.flowsCompleted {
-		t.Errorf("Player only completed %v/%v flows\n",
-			playerStats.flowsStarted, playerStats.flowsCompleted)
+	if playerStats.FlowsCompleted > playerStats.FlowsStarted {
+		t.Errorf("MixPlayer started %v flows, and completed %v flows\n",
+			playerStats.FlowsStarted, playerStats.FlowsCompleted)
 	}
 
 	rxBytes := bridgeStats.Client.Rx.Bytes + bridgeStats.Server.Rx.Bytes
 	if playerStats.Rx.Bytes != rxBytes {
-		t.Errorf("Player rx: %v, Bridge rx: %v", playerStats.Rx.Bytes, rxBytes)
+		t.Errorf("MixPlayer rx: %v, Bridge rx: %v", playerStats.Rx.Bytes, rxBytes)
 	}
 
 	txBytes := bridgeStats.Client.Tx.Bytes + bridgeStats.Server.Tx.Bytes
 	if playerStats.Tx.Bytes != txBytes {
-		t.Errorf("Player tx: %v, Bridge tx: %v", playerStats.Tx.Bytes, txBytes)
+		t.Errorf("MixPlayer tx: %v, Bridge tx: %v", playerStats.Tx.Bytes, txBytes)
 	}
 }
