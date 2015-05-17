@@ -7,12 +7,13 @@ package network
 
 import (
 	"github.com/google/gopacket"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 	"time"
 )
 
 type LoopbackBridgeGroup struct {
 	channels map[uint64]chan gopacket.Packet
-	stats    BridgeGroupStats
+	stats    stats.BridgeGroupStats
 }
 
 func NewLoopbackBridgeGroup() *LoopbackBridgeGroup {
@@ -51,7 +52,7 @@ func (l *LoopbackBridgeGroup) SendServerPacket(p gopacket.Packet) {
 
 func (l *LoopbackBridgeGroup) Shutdown(timeout time.Duration) {}
 
-func (l *LoopbackBridgeGroup) Stats() BridgeGroupStats {
+func (l *LoopbackBridgeGroup) Stats() stats.BridgeGroupStats {
 	return l.stats
 }
 

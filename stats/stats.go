@@ -16,7 +16,7 @@ type PlayerStats struct {
 	FlowsCompleted uint64
 }
 
-type BridgeGroup struct {
+type BridgeGroupStats struct {
 	Client Directional
 	Server Directional
 }

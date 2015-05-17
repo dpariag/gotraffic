@@ -1,6 +1,8 @@
 TODO:
 -----
 	- Improve stat names (stats.PlayerStats, stats.BridgeGroupStats, etc.)
+	- Add BridgeGroup based on any network.Device
+	- Add AF_PACKET device
 	- Add a player unit test for concurrent flow replay (two active players)
 	- Patch kernel so you can profile on OSX 
 	- Write a unit test that checks packets are sent/rcvd in order
