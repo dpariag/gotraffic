@@ -10,11 +10,16 @@ import (
 	"time"
 )
 
+const (
+	rewriteSource = 1
+	rewriteDest = 2
+)
+
 // newPacket changes the source or destination ip of the network layer
 // of the given packet based on the from/to addresses. The metadata
 // (capture info) is also updated, except for the timestamp, which is
 // preserved from the original packet.
-func newPacket(p gopacket.Packet, to net.IP) (gopacket.Packet, error) {
+func newPacket(p gopacket.Packet, rewriteEndpoint int, to net.IP) (gopacket.Packet, error) {
 	all := p.Layers()
 	stack := make([]gopacket.SerializableLayer, len(all))
 	var networkLayer gopacket.NetworkLayer
@@ -23,13 +28,21 @@ func newPacket(p gopacket.Packet, to net.IP) (gopacket.Packet, error) {
 		switch layer.LayerType() {
 		case layers.LayerTypeIPv4:
 			ip4 := layer.(*layers.IPv4)
-			ip4.SrcIP = to.To4()
+			if rewriteEndpoint == rewriteSource {
+				ip4.SrcIP = to.To4()
+			} else {
+				ip4.DstIP = to.To4()
+			}
 			stack[n] = ip4
 			networkLayer = ip4
 		case layers.LayerTypeIPv6:
 			// TODO: Test v6.
 			ip6 := layer.(*layers.IPv6)
-			ip6.SrcIP = to
+			if rewriteEndpoint == rewriteSource {
+				ip6.SrcIP = to
+			} else {
+				ip6.DstIP = to
+			}
 			stack[n] = ip6
 			networkLayer = ip6
 		case layers.LayerTypeTCP:

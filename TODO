@@ -1,23 +1,18 @@
 TODO:
 -----
-	- Improve stat names (stats.PlayerStats, stats.BridgeGroupStats, etc.)
-	- Add BridgeGroup based on any network.Device
+	- Unit test player/ip_rewrite.go 
+	- Think of a way to unit test network.Device and network.BridgeGroup
+	- Write a RESTFUL stats interface (bytes/packets)
 	- Add AF_PACKET device
 	- Add a player unit test for concurrent flow replay (two active players)
 	- Patch kernel so you can profile on OSX 
 	- Write a unit test that checks packets are sent/rcvd in order
 	- FlowGroup should store flow pointers, not values
-	- Make sure flows are passed to players by pointer/reference not value
 	- Add more captures to the capture DB
-	- Test the API that allows flow IP addresses to be re-written
-	- Write a RESTFUL stats interface (bytes/packets)
 	- Figure out a better API for mix (NextFlowGroup is weak)
 	- Design diagram
 	- Measure packet latency
-	- Devices should auto-start (no need for Init())?
-	- Read and Write packets using AF_PACKET 
 	- Make sure channels are directional when possible
-	- Figure out how to end the application after a certain duration and shutdown cleanly 
 	- Review pointer and non-pointer receivers. Clean up as needed.
 	
 Completed
@@ -50,3 +45,11 @@ Completed
 	- Add the ability to generate a slice if IPs
 	- Write a player interface
 	- Support starting/stopping flow replay at arbitrary times
+	- Fix the bug in IP re-writing, where the source IP is always over-written 
+	  (instead of the subscriber IP)
+	- Figure out how to end the application after a certain duration and shutdown cleanly 
+	- Improve stat names (stats.PlayerStats, stats.BridgeGroupStats, etc.)
+	- Make sure flows are passed to players by pointer/reference not value
+	- Devices should auto-start (no need for Init())?
+	- Add the notion of role to a network.Device (for returning packets)
+	- Add BridgeGroup based on any network.Device

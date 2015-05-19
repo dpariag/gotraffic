@@ -133,7 +133,7 @@ func TestPartialFlowReplay(t *testing.T) {
 	playerStats :=  player.Stats()
 
 	if playerStats.FlowsStarted != 1 {
-		t.Errorf("Player started more than 1 flow. (%v started)", playerStats.FlowsStarted)
+		t.Errorf("Player started %v flows (should be one)", playerStats.FlowsStarted)
 	}
 
 	if playerStats.FlowsCompleted != 0 {

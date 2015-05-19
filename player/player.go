@@ -21,7 +21,7 @@ type Player interface {
 }
 
 type player struct {
-	flow   flow.Flow            // Flow being played
+	flow   *flow.Flow           // Flow being played
 	bridge network.BridgeGroup  // Interface that packets are written to
 	ips    []net.IP             // IPs that flows will be played from
 	index  uint64               // Index of the ip currently in use
@@ -32,7 +32,7 @@ type player struct {
 
 func NewPlayer(bridge network.BridgeGroup, f *flow.Flow, ips []net.IP) Player {
 	p := player{in: make(chan gopacket.Packet, f.NumPackets()),
-		bridge: bridge, flow: *f, ips: ips}
+		bridge: bridge, flow:f, ips: ips}
 	for _, ip := range ips {
 		p.register(ip)
 	}
@@ -50,8 +50,8 @@ func (fp *player) readPackets() {
 }
 
 // Registration is a bit of a hack
-func (fp *player) register(srcIP net.IP) {
-	firstPkt, err := newPacket(fp.flow.Packets()[0], srcIP)
+func (fp *player) register(subIP net.IP) {
+	firstPkt, err := newPacket(fp.flow.Packets()[0], rewriteSource, subIP)
 	if err != nil {
 		panic(err)
 	}
@@ -60,21 +60,25 @@ func (fp *player) register(srcIP net.IP) {
 
 func (fp *player) play() {
 	// Choose an IP to play packets from
-	srcIP := fp.ips[fp.index]
+	subIP := fp.ips[fp.index]
 	fp.index = (fp.index + 1) % uint64(len(fp.ips))
 
 	fp.stats.FlowsStarted++
 	// Write packets to the interface, respecting inter-packet gaps
 	for _, p := range fp.flow.Packets() {
-		// Clone the packet, re-writing the source IP and
+		// Clone the packet, re-writing the subscriber IP and
 		// send it to correct side of the bridge group
-		newPkt, err := newPacket(p, srcIP)
-		if err != nil {
-			panic(err)
-		}
 		if p.Packet.NetworkLayer().NetworkFlow().Src() == fp.flow.Client() {
+			newPkt, err := newPacket(p, rewriteSource, subIP)
+			if err != nil {
+				panic(err)
+			}
 			fp.bridge.SendClientPacket(newPkt)
 		} else {
+			newPkt, err := newPacket(p, rewriteDest, subIP)
+			if err != nil {
+				panic(err)
+			}
 			fp.bridge.SendServerPacket(newPkt)
 		}
 		fp.stats.Tx.Packets++
