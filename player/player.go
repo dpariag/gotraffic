@@ -7,6 +7,7 @@ import (
 	"github.com/google/gopacket"
 	"net"
 	"time"
+	"fmt"
 )
 
 type Player interface {
@@ -64,11 +65,12 @@ func (fp *player) play() {
 	fp.index = (fp.index + 1) % uint64(len(fp.ips))
 
 	fp.stats.FlowsStarted++
+	client := fp.flow.Client()
 	// Write packets to the interface, respecting inter-packet gaps
 	for _, p := range fp.flow.Packets() {
 		// Clone the packet, re-writing the subscriber IP and
 		// send it to correct side of the bridge group
-		if p.Packet.NetworkLayer().NetworkFlow().Src() == fp.flow.Client() {
+		if p.Packet.NetworkLayer().NetworkFlow().Src() == client {
 			newPkt, err := newPacket(p, rewriteSource, subIP)
 			if err != nil {
 				panic(err)
@@ -110,3 +112,16 @@ func (fp *player) Stop() {
 func (fp *player) Stats() stats.PlayerStats {
 	return fp.stats
 }
+
+
+func printPacket(prefix string, p gopacket.Packet) {
+	src, dst := p.NetworkLayer().NetworkFlow().Endpoints()
+	fmt.Println(prefix, src, " --> ", dst)
+}
+
+func printFlow(flow *flow.Flow) {
+	for _, p := range flow.Packets() {
+		printPacket("", p)
+	}
+}
+

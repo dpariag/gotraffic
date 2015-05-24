@@ -27,14 +27,15 @@ func newPacket(p gopacket.Packet, rewriteEndpoint int, to net.IP) (gopacket.Pack
 		// TODO(afiori): Handle IP fragments?
 		switch layer.LayerType() {
 		case layers.LayerTypeIPv4:
-			ip4 := layer.(*layers.IPv4)
+			// Copy the IPv4 layer
+			ip4 := *layer.(*layers.IPv4)
 			if rewriteEndpoint == rewriteSource {
 				ip4.SrcIP = to.To4()
 			} else {
 				ip4.DstIP = to.To4()
 			}
-			stack[n] = ip4
-			networkLayer = ip4
+			stack[n] = &ip4
+			networkLayer = &ip4
 		case layers.LayerTypeIPv6:
 			// TODO: Test v6.
 			ip6 := layer.(*layers.IPv6)
