@@ -38,12 +38,7 @@ func (mp *MixPlayer) Stats() stats.PlayerStats {
 	var curStats stats.PlayerStats
 	for _, p := range mp.players {
 		playerStats := p.Stats()
-		curStats.FlowsStarted += playerStats.FlowsStarted
-		curStats.FlowsCompleted += playerStats.FlowsCompleted
-		curStats.Rx.Packets += playerStats.Rx.Packets
-		curStats.Tx.Packets += playerStats.Tx.Packets
-		curStats.Rx.Bytes += playerStats.Rx.Bytes
-		curStats.Tx.Bytes += playerStats.Tx.Bytes
+		curStats.Add(&playerStats)
 	}
 	return curStats
 }

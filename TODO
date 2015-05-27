@@ -1,6 +1,7 @@
 TODO:
 -----
 	- Unit test player/ip_rewrite.go 
+	- Unit test PlayerStats.Add()
 	- Think about how to start and stop a player. What happens to stats, state, channels?
 	- Add a unit test that tests start/stop/start replay. Stats should increase and be correct.
 	- Add a unit test that tests MixPlayerStats don't increase after stopping traffic
@@ -9,7 +10,7 @@ TODO:
 	- Add AF_PACKET device
 	- Add a player unit test for concurrent flow replay (two active players)
 	- Patch kernel so you can profile on OSX 
-	- Write a unit test that checks packets are sent/rcvd in order
+	- Write a unit test that checks packets are sent/rcvd in order (e.g by writing a PCAP)
 	- FlowGroup should store flow pointers, not values
 	- Add more captures to the capture DB
 	- Figure out a better API for mix (NextFlowGroup is weak)
