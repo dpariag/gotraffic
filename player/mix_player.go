@@ -9,16 +9,15 @@ import (
 
 //TODO: Should these be pointers (initialize by value too expensive?)
 type MixPlayer struct {
-	mix        flow.Mix            // The mix being played
-	players    []Player            // Players for each flow in the mix
-	bridge     network.BridgeGroup // The bridge to write packets to
-	ipGen      network.IPGenerator // Generate IPs for replay
-	stats      stats.PlayerStats   // Stats for the player
+	mix     flow.Mix            // The mix being played
+	players []Player            // Players for each flow in the mix
+	bridge  network.BridgeGroup // The bridge to write packets to
+	ipGen   network.IPGenerator // Generate IPs for replay
 }
 
 func NewMixPlayer(m *flow.Mix, bridge network.BridgeGroup) *MixPlayer {
 	mp := &MixPlayer{mix: *m, bridge: bridge, players: make([]Player, m.NumFlows()),
-		ipGen:      network.NewSequentialIPGenerator(net.ParseIP("10.0.0.1"))}
+		ipGen: network.NewSequentialIPGenerator(net.ParseIP("10.0.0.1"))}
 
 	flowNumber := 0
 	for {
@@ -36,30 +35,27 @@ func NewMixPlayer(m *flow.Mix, bridge network.BridgeGroup) *MixPlayer {
 }
 
 func (mp *MixPlayer) Stats() stats.PlayerStats {
-	for _,p := range mp.players {
-		mp.updateStats(p)
+	var curStats stats.PlayerStats
+	for _, p := range mp.players {
+		playerStats := p.Stats()
+		curStats.FlowsStarted += playerStats.FlowsStarted
+		curStats.FlowsCompleted += playerStats.FlowsCompleted
+		curStats.Rx.Packets += playerStats.Rx.Packets
+		curStats.Tx.Packets += playerStats.Tx.Packets
+		curStats.Rx.Bytes += playerStats.Rx.Bytes
+		curStats.Tx.Bytes += playerStats.Tx.Bytes
 	}
-	return mp.stats
+	return curStats
 }
 
 func (mp *MixPlayer) Play() {
-	for _,p := range mp.players {
+	for _, p := range mp.players {
 		p.Play()
 	}
 }
 
 func (mp *MixPlayer) Stop() {
-	for _,p := range mp.players {
+	for _, p := range mp.players {
 		p.Stop()
 	}
-}
-
-func (mp *MixPlayer) updateStats(fp Player) {
-	playerStats := fp.Stats()
-	mp.stats.FlowsStarted += playerStats.FlowsStarted
-	mp.stats.FlowsCompleted += playerStats.FlowsCompleted
-	mp.stats.Rx.Packets += playerStats.Rx.Packets
-	mp.stats.Tx.Packets += playerStats.Tx.Packets
-	mp.stats.Rx.Bytes += playerStats.Rx.Bytes
-	mp.stats.Tx.Bytes += playerStats.Tx.Bytes
 }

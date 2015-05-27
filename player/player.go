@@ -1,13 +1,18 @@
 package player
 
 import (
+	"fmt"
 	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
 	"git.svc.rocks/dpariag/gotraffic/stats"
 	"github.com/google/gopacket"
 	"net"
 	"time"
-	"fmt"
+)
+
+const (
+	stopped = 1 // No more packets to send
+	playing = 2 // Playing packets
 )
 
 type Player interface {
@@ -27,13 +32,13 @@ type player struct {
 	ips    []net.IP             // IPs that flows will be played from
 	index  uint64               // Index of the ip currently in use
 	in     chan gopacket.Packet // channel that packets are returned on
-	stats  stats.PlayerStats	// Rx and Tx stats
-	stop   bool                 // Stop replay after the current packet
+	stats  stats.PlayerStats    // Rx and Tx stats
+	state  int                  // State of the player
 }
 
 func NewPlayer(bridge network.BridgeGroup, f *flow.Flow, ips []net.IP) Player {
 	p := player{in: make(chan gopacket.Packet, f.NumPackets()),
-		bridge: bridge, flow:f, ips: ips}
+		bridge: bridge, flow: f, ips: ips, state: stopped}
 	for _, ip := range ips {
 		p.register(ip)
 	}
@@ -43,7 +48,7 @@ func NewPlayer(bridge network.BridgeGroup, f *flow.Flow, ips []net.IP) Player {
 
 //TODO: This does not work when a flow is replayed more than once
 func (fp *player) readPackets() {
-	for fp.stop == false || fp.stats.Rx.Packets < fp.stats.Tx.Packets {
+	for true {
 		pkt := <-fp.in // read back the packet
 		fp.stats.Rx.Packets++
 		fp.stats.Rx.Bytes += uint64(pkt.Metadata().CaptureInfo.CaptureLength)
@@ -86,7 +91,7 @@ func (fp *player) play() {
 		fp.stats.Tx.Packets++
 		fp.stats.Tx.Bytes += uint64(p.Packet.Metadata().CaptureInfo.CaptureLength)
 		time.Sleep(p.Gap)
-		if fp.stop {
+		if fp.state == stopped {
 			return
 		}
 	}
@@ -94,25 +99,27 @@ func (fp *player) play() {
 }
 
 func (fp *player) Play() {
+	fp.state = playing
 	go func() {
-		for fp.stop != true {
+		for fp.state != stopped {
 			fp.play()
 		}
 	}()
 }
 
 func (fp *player) PlayOnce() {
+	fp.state = playing
 	fp.play()
+	fp.state = stopped
 }
 
 func (fp *player) Stop() {
-	fp.stop = true
+	fp.state = stopped
 }
 
 func (fp *player) Stats() stats.PlayerStats {
 	return fp.stats
 }
-
 
 func printPacket(prefix string, p gopacket.Packet) {
 	src, dst := p.NetworkLayer().NetworkFlow().Endpoints()
@@ -124,4 +131,3 @@ func printFlow(flow *flow.Flow) {
 		printPacket("", p)
 	}
 }
-

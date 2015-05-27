@@ -1,6 +1,9 @@
 TODO:
 -----
 	- Unit test player/ip_rewrite.go 
+	- Think about how to start and stop a player. What happens to stats, state, channels?
+	- Add a unit test that tests start/stop/start replay. Stats should increase and be correct.
+	- Add a unit test that tests MixPlayerStats don't increase after stopping traffic
 	- Think of a way to unit test network.Device and network.BridgeGroup
 	- Write a RESTFUL stats interface (bytes/packets)
 	- Add AF_PACKET device
