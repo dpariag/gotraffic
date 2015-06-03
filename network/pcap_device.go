@@ -9,11 +9,11 @@ import (
 
 
 type pcapDevice struct {
-	role	   int
-	handle     *pcap.Handle
-	txChan     chan gopacket.Packet
-	rxChannels map[uint64]chan gopacket.Packet
-	stats      stats.Directional
+	role	   int						// Role in a bridge group (client side or server side)
+	handle     *pcap.Handle				// Underlying PCAP device
+	txChan     chan gopacket.Packet		// Packets to be sent are collected from here
+	stats      stats.Directional		// Interface stats
+	rxChannels map[uint64]chan gopacket.Packet	// Each packet is returned on a channel
 }
 
 func NewPCAPDevice(name string, role int) Device {
@@ -59,7 +59,7 @@ func (i *pcapDevice) readPackets() {
 	for p := range packetSource.Packets() {
 		i.stats.Rx.Packets++
 		i.stats.Rx.Bytes += uint64(p.Metadata().CaptureInfo.CaptureLength)
-		if i.role == clientDevice { 
+		if i.role == clientDevice {
 			hash = p.NetworkLayer().NetworkFlow().Dst().FastHash()
 		} else {
 			hash = p.NetworkLayer().NetworkFlow().Src().FastHash()

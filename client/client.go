@@ -6,30 +6,35 @@ import (
 	"net/http"
 	"encoding/json"
 	"git.svc.rocks/dpariag/gotraffic/flow"
+	"git.svc.rocks/dpariag/gotraffic/stats"
 	"git.svc.rocks/dpariag/gotraffic/player"
 	"git.svc.rocks/dpariag/gotraffic/network"
 )
 
 var p *player.MixPlayer
+var lastStat stats.PlayerStats
+var lastTime time.Time
 
 func playHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Starting traffic")
 	p.Play()
+	lastTime = time.Now()
 }
 
 func stopHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Fprintf(w, "Stopping traffic")
 	p.Stop()
 }
 
 func statsHandler(w http.ResponseWriter, r *http.Request) {
 	stats := p.Stats()
-	fmt.Fprintf(w, "Started %v flows\n", stats.FlowsStarted)
-	fmt.Fprintf(w, "Completed %v flows\n", stats.FlowsCompleted)
-	fmt.Fprintf(w, "Sent %v packets\n", stats.Tx.Packets)
-	fmt.Fprintf(w, "Rcvd %v packets\n", stats.Rx.Packets)
-	fmt.Fprintf(w, "Sent %v bytes\n", stats.Tx.Bytes)
-	fmt.Fprintf(w, "Rcvd %v bytes\n", stats.Rx.Bytes)
+	txBytes := stats.Tx.Bytes - lastStat.Tx.Bytes 
+	elapsed := time.Since(lastTime).Seconds()
+	txBitrate := float64(txBytes * 8) / elapsed 
+	txBitrate = txBitrate / 1000000.0
+	fmt.Fprintf(w, "Tx Bytes %v\n", txBytes)
+	fmt.Fprintf(w, "Elapsed time %v\n", elapsed)
+	fmt.Fprintf(w, "Tx bitrate %f\n", txBitrate)
+	lastStat = stats
+	lastTime = time.Now()
 }
 
 func handleSSE(player *player.MixPlayer) http.HandlerFunc {
@@ -41,11 +46,15 @@ func handleSSE(player *player.MixPlayer) http.HandlerFunc {
 		}
 		w.Header().Set("Content-Type", "text/event-stream")
 		w.WriteHeader(http.StatusOK)
+		var tx uint64
 		for {
 			stats := player.Stats()
+			fmt.Printf("Cur Tx bytes: %v\n", stats.Tx.Bytes)
+			fmt.Printf("Last Tx bytes: %v\n", tx)
+			fmt.Printf("Interval Tx bps: %v\n", (stats.Tx.Bytes - tx)*8)
 			ts := time.Now()
-			tx := stats.Tx.Bytes
-			rx := stats.Rx.Bytes
+			tx = stats.Tx.Bytes * 8
+			rx := stats.Rx.Bytes * 8
 			ev := map[string]interface{}{
 				"time": int(ts.Unix()),
 				"tx":   tx,
