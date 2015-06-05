@@ -1,8 +1,11 @@
 package main
 
 import (
+	"os"
 	"time"
 	"fmt"
+	"flag"
+	"runtime"
 	"net/http"
 	"encoding/json"
 	"git.svc.rocks/dpariag/gotraffic/flow"
@@ -75,7 +78,27 @@ func handleSSE(player *player.MixPlayer) http.HandlerFunc {
 }
 
 func main() {
-	bridge := network.NewLoopbackBridgeGroup()
+	cores := flag.Int("num-cores", 2, "Number of logical CPUs available for use")
+	subscriberDevice := flag.String("sub-interface", "", "Subscriber interface")
+	internetDevice := flag.String("ext-interface", "", "External interface")
+	useLoopback := flag.Bool("use-loopback", false, "Use virtual loopback interfaces?")
+	flag.Parse()
+
+	var bridge network.BridgeGroup
+	if *useLoopback {
+		bridge = network.NewLoopbackBridgeGroup()
+	} else if *subscriberDevice != "" && *internetDevice != "" {
+		bridge = network.NewBridgeGroup(*subscriberDevice, *internetDevice)
+	} else {
+		fmt.Printf("No valid network interfaces specified\n")
+		flag.Usage()
+		os.Exit(1)
+	}
+
+	if *cores > 0 && *cores <= runtime.NumCPU() {
+		runtime.GOMAXPROCS(*cores)
+	}
+
 	mix := flow.NewMix()
 	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 10)
 	mix.AddFlow(flow.NewFlow("../captures/ping.cap"), 1)

@@ -1,16 +1,18 @@
 TODO:
 -----
+	- Add cmd line args and rename client
 	- Add AF_PACKET device
 	- Fix bug where pcap_device is never cleanly shutdown (goroutines, pcap handles)
 	- Packet listener goroutines (player, network.Device) should shutdown cleanly.
       This means they should not block indefinitely on a channel waiting for a packet. Select!
 	- Think of a way to unit test network.Device and network.BridgeGroup
+	- Write a RESTFUL stats interface (bytes/packets)
+	- Think about how to get richer stats out of MixPlayer
 	- Unit test player/ip_rewrite.go 
 	- Unit test PlayerStats.Add()
 	- Think about how to start and stop a player. What happens to stats, state, channels?
 	- Add a unit test that tests start/stop/start replay. Stats should increase and be correct.
 	- Add a unit test that tests MixPlayerStats don't increase after stopping traffic
-	- Write a RESTFUL stats interface (bytes/packets)
 	- Add a player unit test for concurrent flow replay (two active players)
 	- Patch kernel so you can profile on OSX 
 	- Write a unit test that checks packets are sent/rcvd in order (e.g by writing a PCAP)
