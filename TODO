@@ -1,15 +1,14 @@
 TODO:
 -----
-	- Add cmd line args and rename client
 	- Add AF_PACKET device
+	- Look into using ZeroCopyReadPacketData() - requires returning metadata to Players
 	- Fix bug where pcap_device is never cleanly shutdown (goroutines, pcap handles)
 	- Packet listener goroutines (player, network.Device) should shutdown cleanly.
       This means they should not block indefinitely on a channel waiting for a packet. Select!
-	- Think of a way to unit test network.Device and network.BridgeGroup
+	- Unit test for network.BridgeGroup
 	- Write a RESTFUL stats interface (bytes/packets)
 	- Think about how to get richer stats out of MixPlayer
 	- Unit test player/ip_rewrite.go 
-	- Unit test PlayerStats.Add()
 	- Think about how to start and stop a player. What happens to stats, state, channels?
 	- Add a unit test that tests start/stop/start replay. Stats should increase and be correct.
 	- Add a unit test that tests MixPlayerStats don't increase after stopping traffic
@@ -63,3 +62,6 @@ Completed
 	- Add the notion of role to a network.Device (for returning packets)
 	- Add BridgeGroup based on any network.Device
 	- Import Fiori's code and push stats from the traffic generator to the web UI
+	- Add cmd line args and rename client
+	- Rename deviceHandle to ioHandle 
+	- Unit test network.Device 

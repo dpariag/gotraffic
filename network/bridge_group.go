@@ -1,20 +1,20 @@
 package network
 
 import (
-	"github.com/google/gopacket"
 	"git.svc.rocks/dpariag/gotraffic/stats"
+	"github.com/google/gopacket"
 	"time"
 )
 
 type bridgeGroup struct {
-	client	Device
-	server	Device
-	stats	stats.BridgeGroupStats
+	client Device
+	server Device
+	stats  stats.BridgeGroupStats
 }
 
 func NewBridgeGroup(client string, server string) *bridgeGroup {
-	return &bridgeGroup{client:NewPCAPDevice(client, clientDevice),
-						server:NewPCAPDevice(server, serverDevice)}
+	return &bridgeGroup{client: NewPCAPDevice(client, clientDevice),
+		server: NewPCAPDevice(server, serverDevice)}
 }
 
 func (bg *bridgeGroup) Register(ep gopacket.Endpoint, c chan gopacket.Packet) {
