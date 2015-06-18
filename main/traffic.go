@@ -81,6 +81,7 @@ func main() {
 	cores := flag.Int("num-cores", 2, "Number of logical CPUs available for use")
 	subscriberDevice := flag.String("sub-interface", "", "Subscriber interface")
 	internetDevice := flag.String("ext-interface", "", "External interface")
+	ioType := flag.String("io-type", "pcap", "Packet I/O mechanism: pcap, afpacket")
 	useLoopback := flag.Bool("use-loopback", false, "Use virtual loopback interfaces?")
 	flag.Parse()
 
@@ -88,7 +89,7 @@ func main() {
 	if *useLoopback {
 		bridge = network.NewLoopbackBridgeGroup()
 	} else if *subscriberDevice != "" && *internetDevice != "" {
-		bridge = network.NewBridgeGroup(*subscriberDevice, *internetDevice)
+		bridge = network.NewBridgeGroup(*ioType, *subscriberDevice, *internetDevice)
 	} else {
 		fmt.Printf("No valid network interfaces specified\n")
 		flag.Usage()

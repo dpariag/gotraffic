@@ -12,11 +12,6 @@ type bridgeGroup struct {
 	stats  stats.BridgeGroupStats
 }
 
-func NewBridgeGroup(client string, server string) *bridgeGroup {
-	return &bridgeGroup{client: NewPCAPDevice(client, clientDevice),
-		server: NewPCAPDevice(server, serverDevice)}
-}
-
 func (bg *bridgeGroup) Register(ep gopacket.Endpoint, c chan gopacket.Packet) {
 	bg.client.Register(ep, c)
 	bg.server.Register(ep, c)

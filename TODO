@@ -1,10 +1,11 @@
 TODO:
 -----
 	- Add AF_PACKET device
-	- Look into using ZeroCopyReadPacketData() - requires returning metadata to Players
 	- Fix bug where pcap_device is never cleanly shutdown (goroutines, pcap handles)
 	- Packet listener goroutines (player, network.Device) should shutdown cleanly.
       This means they should not block indefinitely on a channel waiting for a packet. Select!
+	- Select I/O method (AF_PACKET, PCAP,...) automatically based on platform?
+	- Look into using ZeroCopyReadPacketData() - requires returning metadata to Players
 	- Unit test for network.BridgeGroup
 	- Write a RESTFUL stats interface (bytes/packets)
 	- Think about how to get richer stats out of MixPlayer
