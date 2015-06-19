@@ -35,7 +35,7 @@ func TestReplayBasicMix(t *testing.T) {
 
 	if playerStats.FlowsStarted != flowsToPlay {
 		t.Errorf("Played %v flows in the mix. Should have played %v flows\n",
-		playerStats.FlowsStarted, flowsToPlay)
+			playerStats.FlowsStarted, flowsToPlay)
 	}
 
 	if playerStats.FlowsCompleted > playerStats.FlowsStarted {

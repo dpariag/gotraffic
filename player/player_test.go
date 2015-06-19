@@ -112,7 +112,7 @@ func TestMultipleFlowReplay(t *testing.T) {
 
 func TestPartialFlowReplay(t *testing.T) {
 	flow := flow.NewFlow("../captures/ping.cap")
-	playTime := 5*time.Second
+	playTime := 5 * time.Second
 	if flow.Duration() < playTime {
 		t.Errorf("Chosen flow is too short for partial replay test")
 	}
@@ -130,7 +130,7 @@ func TestPartialFlowReplay(t *testing.T) {
 
 	verifyPlayerStats(player, t)
 	verifyBridgeStats(player, bridge, t)
-	playerStats :=  player.Stats()
+	playerStats := player.Stats()
 
 	if playerStats.FlowsStarted != 1 {
 		t.Errorf("Player started %v flows (should be one)", playerStats.FlowsStarted)
@@ -140,7 +140,7 @@ func TestPartialFlowReplay(t *testing.T) {
 		t.Errorf("Player completed %v flows (should be zero)", playerStats.FlowsCompleted)
 	}
 
-	if elapsed > playTime + 100*time.Millisecond {
+	if elapsed > playTime+100*time.Millisecond {
 		t.Errorf("Elapsed time is %v, should be %v\n", elapsed, playTime)
 	}
 }

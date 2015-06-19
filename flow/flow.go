@@ -1,9 +1,9 @@
 package flow
 
 import (
-	"time"
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"time"
 )
 
 type FlowPacket struct {

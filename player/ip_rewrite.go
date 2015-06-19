@@ -12,7 +12,7 @@ import (
 
 const (
 	rewriteSource = 1
-	rewriteDest = 2
+	rewriteDest   = 2
 )
 
 // newPacket changes the source or destination ip of the network layer

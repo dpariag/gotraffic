@@ -5,6 +5,7 @@ package network
 import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/afpacket"
+	"time"
 )
 
 // Implements the ioHandle interface for packet I/O
@@ -22,7 +23,8 @@ func (h *afpacketIOHandle) WritePacketData(data []byte) (err error) {
 
 func newAfPacketIOHandle(name string) (handle *afpacketIOHandle, err error) {
 	var af afpacketIOHandle
-	af.tpacket, err = afpacket.NewTPacket()
+	af.tpacket, err = afpacket.NewTPacket(afpacket.OptInterface(name), afpacket.TPacketVersion2,
+		afpacket.OptBlockTimeout(time.Millisecond*10000))
 	return &af, err
 }
 

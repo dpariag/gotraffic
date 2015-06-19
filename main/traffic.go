@@ -1,17 +1,17 @@
 package main
 
 import (
-	"os"
-	"time"
-	"fmt"
-	"flag"
-	"runtime"
-	"net/http"
 	"encoding/json"
+	"flag"
+	"fmt"
 	"git.svc.rocks/dpariag/gotraffic/flow"
-	"git.svc.rocks/dpariag/gotraffic/stats"
-	"git.svc.rocks/dpariag/gotraffic/player"
 	"git.svc.rocks/dpariag/gotraffic/network"
+	"git.svc.rocks/dpariag/gotraffic/player"
+	"git.svc.rocks/dpariag/gotraffic/stats"
+	"net/http"
+	"os"
+	"runtime"
+	"time"
 )
 
 var p *player.MixPlayer
@@ -29,9 +29,9 @@ func stopHandler(w http.ResponseWriter, r *http.Request) {
 
 func statsHandler(w http.ResponseWriter, r *http.Request) {
 	stats := p.Stats()
-	txBytes := stats.Tx.Bytes - lastStat.Tx.Bytes 
+	txBytes := stats.Tx.Bytes - lastStat.Tx.Bytes
 	elapsed := time.Since(lastTime).Seconds()
-	txBitrate := float64(txBytes * 8) / elapsed 
+	txBitrate := float64(txBytes*8) / elapsed
 	txBitrate = txBitrate / 1000000.0
 	fmt.Fprintf(w, "Tx Bytes %v\n", txBytes)
 	fmt.Fprintf(w, "Elapsed time %v\n", elapsed)
@@ -54,7 +54,7 @@ func handleSSE(player *player.MixPlayer) http.HandlerFunc {
 			stats := player.Stats()
 			fmt.Printf("Cur Tx bytes: %v\n", stats.Tx.Bytes)
 			fmt.Printf("Last Tx bytes: %v\n", tx)
-			fmt.Printf("Interval Tx bps: %v\n", (stats.Tx.Bytes - tx)*8)
+			fmt.Printf("Interval Tx bps: %v\n", (stats.Tx.Bytes-tx)*8)
 			ts := time.Now()
 			tx = stats.Tx.Bytes * 8
 			rx := stats.Rx.Bytes * 8
@@ -101,7 +101,7 @@ func main() {
 	}
 
 	mix := flow.NewMix()
-	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 10)
+	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 2000)
 	mix.AddFlow(flow.NewFlow("../captures/ping.cap"), 1)
 	p = player.NewMixPlayer(mix, bridge)
 
@@ -110,8 +110,6 @@ func main() {
 	http.HandleFunc("/stats", statsHandler)
 	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.Handle("/sse", handleSSE(p))
-	http.ListenAndServe(":8080", nil)
-
-	fmt.Printf("After ListenAndServe\n")
-	bridge.Shutdown(1*time.Second)
+	http.ListenAndServe(":80", nil)
+	bridge.Shutdown(1 * time.Second)
 }
