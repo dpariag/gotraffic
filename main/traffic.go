@@ -29,15 +29,15 @@ func stopHandler(w http.ResponseWriter, r *http.Request) {
 
 func statsHandler(w http.ResponseWriter, r *http.Request) {
 	stats := p.Stats()
-	txBytes := stats.Tx.Bytes - lastStat.Tx.Bytes
-	elapsed := time.Since(lastTime).Seconds()
-	txBitrate := float64(txBytes*8) / elapsed
-	txBitrate = txBitrate / 1000000.0
-	fmt.Fprintf(w, "Tx Bytes %v\n", txBytes)
-	fmt.Fprintf(w, "Elapsed time %v\n", elapsed)
-	fmt.Fprintf(w, "Tx bitrate %f\n", txBitrate)
-	lastStat = stats
-	lastTime = time.Now()
+	json, _ := json.Marshal(stats)
+	fmt.Fprintf(w, "data: %s\n\n", json)
+}
+
+func flowStatsHandler(w http.ResponseWriter, r *http.Request) {
+	fmt.Printf("Flow stats handler")
+	flowStats := p.FlowStats()
+	json,_ := json.Marshal(flowStats)
+	fmt.Fprintf(w, "data: %s\n\n", json)
 }
 
 func handleSSE(player *player.MixPlayer) http.HandlerFunc {
@@ -52,9 +52,7 @@ func handleSSE(player *player.MixPlayer) http.HandlerFunc {
 		var tx uint64
 		for {
 			stats := player.Stats()
-			fmt.Printf("Cur Tx bytes: %v\n", stats.Tx.Bytes)
-			fmt.Printf("Last Tx bytes: %v\n", tx)
-			fmt.Printf("Interval Tx bps: %v\n", (stats.Tx.Bytes-tx)*8)
+			fmt.Printf("Interval Tx (Mbps): %v\n", ((stats.Tx.Bytes-tx)*8)/1000000.0)
 			ts := time.Now()
 			tx = stats.Tx.Bytes * 8
 			rx := stats.Rx.Bytes * 8
@@ -101,13 +99,14 @@ func main() {
 	}
 
 	mix := flow.NewMix()
-	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 2000)
+	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 20)
 	mix.AddFlow(flow.NewFlow("../captures/ping.cap"), 1)
 	p = player.NewMixPlayer(mix, bridge)
 
 	http.HandleFunc("/play", playHandler)
 	http.HandleFunc("/stop", stopHandler)
 	http.HandleFunc("/stats", statsHandler)
+	http.HandleFunc("/stats/flows", flowStatsHandler)
 	http.Handle("/", http.FileServer(http.Dir(".")))
 	http.Handle("/sse", handleSSE(p))
 	http.ListenAndServe(":80", nil)

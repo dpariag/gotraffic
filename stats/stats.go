@@ -4,14 +4,19 @@ import (
 	"fmt"
 )
 
-type Traffic struct {
+type trafficStats struct {
 	Bytes   uint64
 	Packets uint64
 }
 
 type Directional struct {
-	Rx Traffic
-	Tx Traffic
+	Rx trafficStats
+	Tx trafficStats
+}
+
+type FlowStats struct {
+	Name string
+	PlayerStats
 }
 
 type PlayerStats struct {
@@ -36,6 +41,15 @@ func (ps *PlayerStats) Add(other *PlayerStats) {
 	ps.Tx.Packets += other.Tx.Packets
 	ps.Rx.Bytes += other.Rx.Bytes
 	ps.Tx.Bytes += other.Tx.Bytes
+}
+
+func (ps *PlayerStats) Clear() {
+	ps.FlowsStarted = 0
+	ps.FlowsCompleted = 0
+	ps.Rx.Packets = 0
+	ps.Tx.Packets = 0
+	ps.Rx.Bytes = 0
+	ps.Tx.Bytes = 0
 }
 
 func (d *Directional) Equals(other *Directional) bool {

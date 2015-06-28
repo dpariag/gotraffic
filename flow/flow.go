@@ -3,6 +3,7 @@ package flow
 import (
 	"github.com/google/gopacket"
 	"github.com/google/gopacket/pcap"
+	"path/filepath"
 	"time"
 )
 
@@ -14,6 +15,7 @@ type FlowPacket struct {
 type FlowPackets []FlowPacket
 
 type Flow struct {
+	name	 string
 	pkts     FlowPackets // the packets of the flow, including inter-packet gaps
 	duration time.Duration
 	numBytes uint64
@@ -39,6 +41,7 @@ func NewFlow(capFile string) *Flow {
 		f.pkts[0].Gap = 0 // Fix the gap on the first packet
 		f.setDuration()
 		f.bitrate = float64(f.numBytes) * 8.0 / f.duration.Seconds()
+		f.name = flowName(capFile)
 		return &f
 	}
 }
@@ -47,6 +50,10 @@ func (f *Flow) setDuration() {
 	startTime := f.pkts[0].Metadata().CaptureInfo.Timestamp
 	endTime := f.pkts[len(f.pkts)-1].Metadata().CaptureInfo.Timestamp
 	f.duration = endTime.Sub(startTime)
+}
+
+func (f *Flow) Name() string {
+	return f.name
 }
 
 func (f *Flow) Packets() FlowPackets {
@@ -93,10 +100,9 @@ func (f *Flow) Server() gopacket.Endpoint {
 	return f.pkts[0].NetworkLayer().NetworkFlow().Dst()
 }
 
-func (f *Flow) ClientPackets() FlowPackets {
-	return f.endpointPackets(f.Client())
-}
-
-func (f *Flow) ServerPackets() FlowPackets {
-	return f.endpointPackets(f.Server())
+// Extract a flow name from a pathname
+func flowName(capFile string) string {
+	ext := filepath.Ext(capFile)
+	name := filepath.Base(capFile)
+	return name[:len(name) - len(ext)]
 }

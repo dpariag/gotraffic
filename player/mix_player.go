@@ -7,19 +7,28 @@ import (
 	"net"
 )
 
+// Associate a player with the index of it's flow in the Mix
+type playerInfo struct {
+	Player
+	index int
+}
+
 //TODO: Should these be pointers (initialize by value too expensive?)
 type MixPlayer struct {
 	mix     flow.Mix            // The mix being played
-	players []Player            // Players for each flow in the mix
+	players []playerInfo        // (Player,id) for each flow in the mix
+	flowStats []stats.FlowStats // Per-flow statistics
 	bridge  network.BridgeGroup // The bridge to write packets to
 	ipGen   network.IPGenerator // Generate IPs for replay
 }
 
 func NewMixPlayer(m *flow.Mix, bridge network.BridgeGroup) *MixPlayer {
-	mp := &MixPlayer{mix: *m, bridge: bridge, players: make([]Player, m.NumFlows()),
+	mp := &MixPlayer{mix: *m, bridge: bridge,
+		players: make([]playerInfo, m.NumFlows()),
+		flowStats: make([]stats.FlowStats, m.NumFlowGroups()),
 		ipGen: network.NewSequentialIPGenerator(net.ParseIP("10.0.0.1"))}
 
-	flowNumber := 0
+	flowGroup, flowNumber := 0,0
 	for {
 		fg, err := mp.mix.NextFlowGroup()
 		if err != nil {
@@ -27,9 +36,11 @@ func NewMixPlayer(m *flow.Mix, bridge network.BridgeGroup) *MixPlayer {
 		}
 		for i := 0; i < int(fg.Copies); i++ {
 			ips := mp.ipGen.GenerateIPs(2)
-			mp.players[flowNumber] = NewPlayer(mp.bridge, &fg.Flow, ips)
+			mp.players[flowNumber] = playerInfo{NewPlayer(mp.bridge, &fg.Flow, ips), flowGroup}
 			flowNumber++
 		}
+		mp.flowStats[flowGroup].Name = fg.Flow.Name()
+		flowGroup++
 	}
 	return mp
 }
@@ -41,6 +52,18 @@ func (mp *MixPlayer) Stats() stats.PlayerStats {
 		curStats.Add(&playerStats)
 	}
 	return curStats
+}
+
+func (mp *MixPlayer) FlowStats() []stats.FlowStats {
+	for index,_ := range mp.flowStats {
+		mp.flowStats[index].Clear()
+	}
+
+	for _, p := range mp.players {
+		stat := p.Stats()
+		mp.flowStats[p.index].Add(&stat)
+	}
+	return mp.flowStats
 }
 
 func (mp *MixPlayer) Play() {

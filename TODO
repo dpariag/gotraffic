@@ -1,6 +1,7 @@
 TODO:
 -----
-	- Add AF_PACKET device
+	- Rename flow.Flow suggests one flow per capture. Reality is many per capture. Rename?
+	- Flow mix should simply return a slice of flows (sessions?) 
 	- Fix bug where pcap_device is never cleanly shutdown (goroutines, pcap handles)
 	- Packet listener goroutines (player, network.Device) should shutdown cleanly.
       This means they should not block indefinitely on a channel waiting for a packet. Select!
@@ -8,7 +9,6 @@ TODO:
 	- Look into using ZeroCopyReadPacketData() - requires returning metadata to Players
 	- Unit test for network.BridgeGroup
 	- Write a RESTFUL stats interface (bytes/packets)
-	- Think about how to get richer stats out of MixPlayer
 	- Unit test player/ip_rewrite.go 
 	- Think about how to start and stop a player. What happens to stats, state, channels?
 	- Add a unit test that tests start/stop/start replay. Stats should increase and be correct.
@@ -18,8 +18,6 @@ TODO:
 	- Write a unit test that checks packets are sent/rcvd in order (e.g by writing a PCAP)
 	- FlowGroup should store flow pointers, not values
 	- Add more captures to the capture DB
-	- Figure out a better API for mix (NextFlowGroup is weak)
-	- Design diagram
 	- Measure packet latency
 	- Make sure channels are directional when possible
 	- Review pointer and non-pointer receivers. Clean up as needed.
@@ -66,3 +64,5 @@ Completed
 	- Add cmd line args and rename client
 	- Rename deviceHandle to ioHandle 
 	- Unit test network.Device 
+	- Add AF_PACKET device
+	- Think about how to get richer stats out of MixPlayer
