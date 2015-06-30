@@ -6,11 +6,12 @@ import (
 	"git.svc.rocks/dpariag/gotraffic/stats"
 	"testing"
 	"time"
+	"fmt"
 )
 
 func calculateFlowsToPlay(duration time.Duration, mix *flow.Mix) uint64 {
 	var flowsToPlay uint64
-	for fg, err := mix.NextFlowGroup(); err == nil; fg, err = mix.NextFlowGroup() {
+	for _,fg := range mix.FlowGroups() {
 		flowsPerDuration := uint64(((duration.Nanoseconds() / fg.Duration().Nanoseconds()) + 1))
 		flowsToPlay += fg.Copies * flowsPerDuration
 	}
@@ -62,13 +63,15 @@ func TestReplayBasicMix(t *testing.T) {
 	bridgeStats := bridge.Stats()
 	playerStats := player.Stats()
 
+	fmt.Printf("Started %v flows in the mix. Should have started %v flows\n",
+			playerStats.FlowsStarted, flowsToPlay)
 	if playerStats.FlowsStarted != flowsToPlay {
-		t.Errorf("Played %v flows in the mix. Should have played %v flows\n",
+		t.Errorf("Started %v flows in the mix. Should have started %v flows\n",
 			playerStats.FlowsStarted, flowsToPlay)
 	}
 
 	if playerStats.FlowsCompleted > playerStats.FlowsStarted {
-		t.Errorf("MixPlayer started %v flows, and completed %v flows\n",
+		t.Errorf("MixPlayer started %v flows, but completed %v flows\n",
 			playerStats.FlowsStarted, playerStats.FlowsCompleted)
 	}
 

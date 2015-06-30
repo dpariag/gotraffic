@@ -12,6 +12,7 @@ const (
 	serverDevice = 2
 )
 
+// Interface for underlying OS primitives for reading/writing packets
 type ioHandle interface {
 	ReadPacketData() (data []byte, ci gopacket.CaptureInfo, err error)
 	WritePacketData(data []byte) (err error)

@@ -29,17 +29,14 @@ func NewMixPlayer(m *flow.Mix, bridge network.BridgeGroup) *MixPlayer {
 		ipGen: network.NewSequentialIPGenerator(net.ParseIP("10.0.0.1"))}
 
 	flowGroup, flowNumber := 0,0
-	for {
-		fg, err := mp.mix.NextFlowGroup()
-		if err != nil {
-			break
-		}
+	flowGroups := mp.mix.FlowGroups()
+	for index, fg := range flowGroups {
 		for i := 0; i < int(fg.Copies); i++ {
 			ips := mp.ipGen.GenerateIPs(2)
-			mp.players[flowNumber] = playerInfo{NewPlayer(mp.bridge, &fg.Flow, ips), flowGroup}
+			mp.players[flowNumber] = playerInfo{NewPlayer(mp.bridge, flowGroups[index].Flow, ips), flowGroup}
 			flowNumber++
 		}
-		mp.flowStats[flowGroup].Name = fg.Flow.Name()
+		mp.flowStats[flowGroup].Name = fg.Name()
 		flowGroup++
 	}
 	return mp

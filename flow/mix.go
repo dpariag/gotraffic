@@ -1,14 +1,9 @@
 // A collection of flows that are to be replayed concurrently
 package flow
 
-import (
-	"errors"
-	"fmt"
-)
-
 type FlowGroup struct {
-	Flow
-	Copies uint64 // # of copies to be replayed concurrently
+	*Flow
+	Copies uint64 // # of copies of this flow in the mix
 }
 
 type Mix struct {
@@ -23,9 +18,7 @@ func NewMix() *Mix {
 }
 
 func (m *Mix) AddFlow(f *Flow, copies uint64) {
-	fmt.Printf("Adding flow. %v packets. %v bytes %v ms. Avg packet size:%v\n",
-		f.NumPackets(), f.NumBytes(), f.Duration(), f.NumBytes()/f.NumPackets())
-	m.flows = append(m.flows, FlowGroup{*f, copies})
+	m.flows = append(m.flows, FlowGroup{f, copies})
 	m.numFlows += copies
 	m.bitrate += (f.Bitrate() * float64(copies))
 }
@@ -42,12 +35,6 @@ func (m *Mix) NumFlowGroups() uint64 {
 	return uint64(len(m.flows))
 }
 
-func (m *Mix) NextFlowGroup() (*FlowGroup, error) {
-	if m.index < uint64(len(m.flows)) {
-		fg := m.flows[m.index]
-		m.index++
-		return &fg, nil
-	}
-	m.index = 0
-	return nil, errors.New("No more flow groups")
+func (m *Mix) FlowGroups() []FlowGroup {
+	return m.flows
 }
