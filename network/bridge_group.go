@@ -6,6 +6,14 @@ import (
 	"time"
 )
 
+type BridgeGroup interface {
+	Register(ep gopacket.Endpoint, c chan gopacket.Packet)
+	SendClientPacket(p gopacket.Packet)
+	SendServerPacket(p gopacket.Packet)
+	Stats() stats.BridgeGroupStats
+	Shutdown(timeout time.Duration)
+}
+
 type bridgeGroup struct {
 	client Device
 	server Device

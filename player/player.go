@@ -16,12 +16,9 @@ const (
 )
 
 type Player interface {
-	// Play a flow exactly once. Returns when replay is complete
-	PlayOnce()
-	// Play a flow in a loop. Returns immediately
-	Play()
-	// Stop flow replay immediately
-	Stop()
+	PlayOnce()	// Play a flow exactly once. Returns when replay is complete
+	Play()		// Play a flow in a loop. Returns immediately
+	Stop()		// Stop flow replay immediately
 	//Pause()
 	Stats() stats.PlayerStats
 }

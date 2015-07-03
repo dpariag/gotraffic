@@ -25,14 +25,6 @@ type Device interface {
 	Shutdown(timeout time.Duration)
 }
 
-type BridgeGroup interface {
-	Register(ep gopacket.Endpoint, c chan gopacket.Packet)
-	SendClientPacket(p gopacket.Packet)
-	SendServerPacket(p gopacket.Packet)
-	Stats() stats.BridgeGroupStats
-	Shutdown(timeout time.Duration)
-}
-
 type device struct {
 	role       int                             // Role in a bridge group (client side or server side)
 	io         ioHandle                        // For reading/writing packets
