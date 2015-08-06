@@ -99,8 +99,7 @@ func main() {
 	}
 
 	mix := flow.NewMix()
-	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 20)
-	mix.AddFlow(flow.NewFlow("../captures/ping.cap"), 1)
+	mix.AddFlow(flow.NewFlow("../captures/youtube.cap"), 300)
 	p = player.NewMixPlayer(mix, bridge)
 
 	http.HandleFunc("/play", playHandler)
