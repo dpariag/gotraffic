@@ -47,7 +47,14 @@ func (l *LoopbackBridgeGroup) SendServerPacket(p gopacket.Packet) {
 	}
 }
 
-func (l *LoopbackBridgeGroup) Shutdown(timeout time.Duration) {}
+func (l *LoopbackBridgeGroup) Shutdown(timeout time.Duration) {
+    start := time.Now()
+    for _, ch := range l.channels {
+        for len(ch) > 0 && time.Since(start) < timeout {
+            time.Sleep(1 * time.Millisecond)
+        }
+    }
+}
 
 func (l *LoopbackBridgeGroup) Stats() stats.BridgeGroupStats {
 	return l.stats

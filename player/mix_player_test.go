@@ -6,7 +6,6 @@ import (
 	"git.svc.rocks/dpariag/gotraffic/stats"
 	"testing"
 	"time"
-	"fmt"
 )
 
 func calculateFlowsToPlay(duration time.Duration, mix *flow.Mix) uint64 {
@@ -63,8 +62,6 @@ func TestReplayBasicMix(t *testing.T) {
 	bridgeStats := bridge.Stats()
 	playerStats := player.Stats()
 
-	fmt.Printf("Started %v flows in the mix. Should have started %v flows\n",
-			playerStats.FlowsStarted, flowsToPlay)
 	if playerStats.FlowsStarted != flowsToPlay {
 		t.Errorf("Started %v flows in the mix. Should have started %v flows\n",
 			playerStats.FlowsStarted, flowsToPlay)

@@ -1,6 +1,8 @@
 TODO:
 -----
 	- Rename flow.Flow to Capture?
+    - Change the Shutdown() API of network.BridgeGroup to propogate errors
+    - Create flows from svtraffic cfg files
 	- Count read/write errors from AF_PACKET
 	- Move packet re-writing to the device level (from player)
 	- Get a new youtube capture that has SYNs

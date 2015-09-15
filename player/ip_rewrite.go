@@ -15,11 +15,18 @@ const (
 	rewriteDest   = 2
 )
 
+type rewriteConfig struct {
+	srcIp   net.IP // nil indicates no rewrite necessary
+	dstIp   net.IP // nil indicates no rewrite necessary
+	srcPort uint16 // 0 indicates no rewrite necessary
+	dstPort uint16 // 0 indicates no rewrite necessary
+}
+
 // newPacket changes the source or destination ip of the network layer
 // of the given packet based on the from/to addresses. The metadata
 // (capture info) is also updated, except for the timestamp, which is
 // preserved from the original packet.
-func newPacket(p gopacket.Packet, rewriteEndpoint int, to net.IP) (gopacket.Packet, error) {
+func newPacket(p gopacket.Packet, rewrite rewriteConfig) (gopacket.Packet, error) {
 	all := p.Layers()
 	stack := make([]gopacket.SerializableLayer, len(all))
 	var networkLayer gopacket.NetworkLayer
@@ -29,32 +36,46 @@ func newPacket(p gopacket.Packet, rewriteEndpoint int, to net.IP) (gopacket.Pack
 		case layers.LayerTypeIPv4:
 			// Copy the IPv4 layer
 			ip4 := *layer.(*layers.IPv4)
-			if rewriteEndpoint == rewriteSource {
-				ip4.SrcIP = to.To4()
-			} else {
-				ip4.DstIP = to.To4()
+			if rewrite.srcIp != nil {
+				ip4.SrcIP = rewrite.srcIp.To4()
+			}
+			if rewrite.dstIp != nil {
+				ip4.DstIP = rewrite.dstIp.To4()
 			}
 			stack[n] = &ip4
 			networkLayer = &ip4
 		case layers.LayerTypeIPv6:
 			// TODO: Test v6.
 			ip6 := layer.(*layers.IPv6)
-			if rewriteEndpoint == rewriteSource {
-				ip6.SrcIP = to
-			} else {
-				ip6.DstIP = to
+			if rewrite.srcIp != nil {
+				ip6.SrcIP = rewrite.srcIp
+			}
+			if rewrite.dstIp != nil {
+				ip6.DstIP = rewrite.dstIp
 			}
 			stack[n] = ip6
 			networkLayer = ip6
 		case layers.LayerTypeTCP:
 			if networkLayer != nil {
 				tcp := layer.(*layers.TCP)
+				if rewrite.srcPort != 0 {
+					tcp.SrcPort = layers.TCPPort(rewrite.srcPort)
+				}
+				if rewrite.dstPort != 0 {
+					tcp.DstPort = layers.TCPPort(rewrite.dstPort)
+				}
 				tcp.SetNetworkLayerForChecksum(networkLayer)
 				stack[n] = tcp
 			}
 		case layers.LayerTypeUDP:
 			if networkLayer != nil {
 				udp := layer.(*layers.UDP)
+				if rewrite.srcPort != 0 {
+					udp.SrcPort = layers.UDPPort(rewrite.srcPort)
+				}
+				if rewrite.dstPort != 0 {
+					udp.DstPort = layers.UDPPort(rewrite.dstPort)
+				}
 				udp.SetNetworkLayerForChecksum(networkLayer)
 				stack[n] = udp
 			}

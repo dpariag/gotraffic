@@ -4,38 +4,21 @@ import (
 	"fmt"
 	"git.svc.rocks/dpariag/gotraffic/flow"
 	"git.svc.rocks/dpariag/gotraffic/network"
-	"git.svc.rocks/dpariag/gotraffic/stats"
 	"github.com/google/gopacket"
 	"net"
 	"time"
 )
 
-const (
-	stopped = 1 // No more packets to send
-	playing = 2 // Playing packets
-)
-
-type Player interface {
-	PlayOnce()	// Play a flow exactly once. Returns when replay is complete
-	Play()		// Play a flow in a loop. Returns immediately
-	Stop()		// Stop flow replay immediately
-	//Pause()
-	Stats() stats.PlayerStats
-}
-
 type player struct {
-	flow   *flow.Flow           // Flow being played
-	bridge network.BridgeGroup  // Interface that packets are written to
-	ips    []net.IP             // IPs that flows will be played from
-	index  uint64               // Index of the ip currently in use
-	in     chan gopacket.Packet // channel that packets are returned on
-	stats  stats.PlayerStats    // Rx and Tx stats
-	state  int                  // State of the player
+	playerCommon          // Embed player basics
+	ips          []net.IP // IPs that flows will be played from
+	index        uint64   // Index of the ip currently in use
+	state        int      // State of the player
 }
 
 func NewPlayer(bridge network.BridgeGroup, f *flow.Flow, ips []net.IP) Player {
-	p := player{in: make(chan gopacket.Packet, f.NumPackets()),
-		bridge: bridge, flow: f, ips: ips, state: stopped}
+	p := player{playerCommon: newPlayerCommon(bridge, f), ips: ips, state: stopped}
+
 	for _, ip := range ips {
 		p.register(ip)
 	}
@@ -43,18 +26,10 @@ func NewPlayer(bridge network.BridgeGroup, f *flow.Flow, ips []net.IP) Player {
 	return &p
 }
 
-//TODO: This does not work when a flow is replayed more than once
-func (fp *player) readPackets() {
-	for true {
-		pkt := <-fp.in // read back the packet
-		fp.stats.Rx.Packets++
-		fp.stats.Rx.Bytes += uint64(pkt.Metadata().CaptureInfo.CaptureLength)
-	}
-}
-
 // Registration is a bit of a hack
-func (fp *player) register(subIP net.IP) {
-	firstPkt, err := newPacket(fp.flow.Packets()[0], rewriteSource, subIP)
+func (fp *player) register(subIp net.IP) {
+	srcRewrite := rewriteConfig{srcIp: subIp}
+	firstPkt, err := newPacket(fp.flow.Packets()[0], srcRewrite)
 	if err != nil {
 		panic(err)
 	}
@@ -63,7 +38,9 @@ func (fp *player) register(subIP net.IP) {
 
 func (fp *player) play() {
 	// Choose an IP to play packets from
-	subIP := fp.ips[fp.index]
+	srcRewrite := rewriteConfig{srcIp: fp.ips[fp.index]}
+	dstRewrite := rewriteConfig{dstIp: fp.ips[fp.index]}
+	//subIP := fp.ips[fp.index]
 	fp.index = (fp.index + 1) % uint64(len(fp.ips))
 
 	fp.stats.FlowsStarted++
@@ -73,13 +50,13 @@ func (fp *player) play() {
 		// Clone the packet, re-writing the subscriber IP and
 		// send it to correct side of the bridge group
 		if p.Packet.NetworkLayer().NetworkFlow().Src() == client {
-			newPkt, err := newPacket(p, rewriteSource, subIP)
+			newPkt, err := newPacket(p, srcRewrite)
 			if err != nil {
 				panic(err)
 			}
 			fp.bridge.SendClientPacket(newPkt)
 		} else {
-			newPkt, err := newPacket(p, rewriteDest, subIP)
+			newPkt, err := newPacket(p, dstRewrite)
 			if err != nil {
 				panic(err)
 			}
@@ -112,10 +89,6 @@ func (fp *player) PlayOnce() {
 
 func (fp *player) Stop() {
 	fp.state = stopped
-}
-
-func (fp *player) Stats() stats.PlayerStats {
-	return fp.stats
 }
 
 func printPacket(prefix string, p gopacket.Packet) {
