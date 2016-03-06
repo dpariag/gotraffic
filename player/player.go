@@ -2,8 +2,8 @@ package player
 
 import (
 	"fmt"
-	"git.svc.rocks/dpariag/gotraffic/flow"
-	"git.svc.rocks/dpariag/gotraffic/network"
+	"github.com/dpariag/gotraffic/flow"
+	"github.com/dpariag/gotraffic/network"
 	"github.com/google/gopacket"
 	"net"
 	"time"

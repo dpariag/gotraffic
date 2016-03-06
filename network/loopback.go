@@ -6,7 +6,7 @@
 package network
 
 import (
-	"git.svc.rocks/dpariag/gotraffic/stats"
+	"github.com/dpariag/gotraffic/stats"
 	"github.com/google/gopacket"
 	"time"
 )

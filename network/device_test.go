@@ -1,12 +1,9 @@
 package network
 
 import (
-	//"fmt"
 	"testing"
 	"time"
-	//"github.com/google/gopacket"
-	"git.svc.rocks/dpariag/gotraffic/flow"
-	//"git.svc.rocks/dpariag/gotraffic/stats"
+	"github.com/dpariag/gotraffic/flow"
 )
 
 func TestDeviceCreation(t *testing.T) {

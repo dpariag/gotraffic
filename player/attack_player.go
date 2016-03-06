@@ -2,8 +2,8 @@
 package player
 
 import (
-	"git.svc.rocks/dpariag/gotraffic/flow"
-	"git.svc.rocks/dpariag/gotraffic/network"
+	"github.com/dpariag/gotraffic/flow"
+	"github.com/dpariag/gotraffic/network"
 	"net"
 	"time"
 )
